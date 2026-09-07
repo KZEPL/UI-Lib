@@ -140,8 +140,8 @@ SettingsGui.Parent = playerGui
 local UI_WIDTH = isMobile and 492 or 650
 local UI_HEIGHT = isMobile and 351 or 450
 local NAV_WIDTH = isMobile and 40 or 50
-local CONTENT_OFFSET = isMobile and 65 or 81
-local TAB_BUTTON_WIDTH = isMobile and 65 or 90
+local CONTENT_OFFSET = isMobile and 70 or 81
+local TAB_BUTTON_WIDTH = isMobile and 80 or 90
 
 local MainWindow = Instance.new("Frame")
 MainWindow.Name = "MainWindow"
