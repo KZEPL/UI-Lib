@@ -128,7 +128,7 @@ local function rgbToHsv(c)
 end
 
 -- ============================================================
---  CREATE UI (MOBILE OPTIMIZED)
+--  CREATE UI (MOBILE OPTIMIZED - FIXED)
 -- ============================================================
 local SettingsGui = Instance.new("ScreenGui")
 SettingsGui.Name = "RobloxianSettings"
@@ -136,12 +136,11 @@ SettingsGui.ResetOnSpawn = false
 SettingsGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 SettingsGui.Parent = playerGui
 
--- MOBILE SIZE: 337x191 (as requested)
+-- MOBILE SIZE: fixed for better display
 local UI_WIDTH = isMobile and 492 or 650
-local UI_HEIGHT = isMobile and 351 or 450
-local NAV_WIDTH = isMobile and 40 or 50
-local CONTENT_OFFSET = isMobile and 70 or 81
-local TAB_BUTTON_WIDTH = isMobile and 80 or 90
+local UI_HEIGHT = isMobile and 451 or 480
+local NAV_WIDTH = isMobile and 50 or 50
+local NAV_EXPANDED = isMobile and 120 or 150
 
 local MainWindow = Instance.new("Frame")
 MainWindow.Name = "MainWindow"
@@ -165,26 +164,13 @@ local startPos = nil
 local noDrag = {}
 local function markNoDrag(gui) noDrag[gui] = true end
 
-local function isInside(obj, ancestor)
-	local node = obj
-	while node do
-		if node == ancestor then return true end
-		node = node.Parent
-	end
-	return false
-end
-
--- Make the entire MainWindow draggable (except interactive elements)
 MainWindow.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		-- Check if click is on an interactive element (button, slider, dropdown, textbox)
 		local objs = playerGui:GetGuiObjectsAtPosition(input.Position.X, input.Position.Y)
 		for _, obj in ipairs(objs) do
 			local node = obj
 			while node do
-				if noDrag[node] then
-					return -- Don't drag if clicking on interactive element
-				end
+				if noDrag[node] then return end
 				node = node.Parent
 			end
 		end
@@ -213,9 +199,8 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- ============================================================
---  CLOSE & OPEN BUTTONS (Built into UI)
+--  CLOSE & OPEN BUTTONS
 -- ============================================================
--- Close Button (Top Right)
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 24, 0, 24)
 closeBtn.Position = UDim2.new(1, -32, 0, 6)
@@ -229,7 +214,6 @@ closeBtn.Parent = MainWindow
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 4)
 markNoDrag(closeBtn)
 
--- Open Button (Small icon - visible when menu closed)
 local openButton = Instance.new("ImageButton")
 openButton.Size = UDim2.new(0, 40, 0, 40)
 openButton.Position = UDim2.new(0.02, 0, 0.02, 0)
@@ -242,7 +226,6 @@ openButton.Parent = SettingsGui
 Instance.new("UICorner", openButton).CornerRadius = UDim.new(1, 0)
 markNoDrag(openButton)
 
--- Minimize Button (Top Right)
 local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Size = UDim2.new(0, 24, 0, 24)
 minimizeBtn.Position = UDim2.new(1, -60, 0, 6)
@@ -267,17 +250,12 @@ end)
 --  MINIMIZE FUNCTIONALITY (—) with Floating Bar
 -- ============================================================
 local floatingBar = nil
-local isOpen = true
 
--- Create the floating bar when minimizing
 minimizeBtn.MouseButton1Click:Connect(function()
 	isOpen = false
 	MainWindow.Visible = false
-
-	-- Destroy existing floating bar if it exists
 	if floatingBar then floatingBar:Destroy() end
 
-	-- Create floating bar
 	floatingBar = Instance.new("Frame")
 	floatingBar.Size = UDim2.new(0, 156, 0, 23)
 	floatingBar.Position = UDim2.new(0.275, 0, 0.097, 0)
@@ -290,14 +268,12 @@ minimizeBtn.MouseButton1Click:Connect(function()
 	floatingBar.Parent = SettingsGui
 	Instance.new("UICorner", floatingBar).CornerRadius = UDim.new(0, 4)
 
-	-- Make floating bar draggable
 	local dragToggle = false
 	local dragStart = nil
 	local startPos = nil
 
 	floatingBar.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			-- Check if clicking on the open button (don't drag if clicking button)
 			local objs = playerGui:GetGuiObjectsAtPosition(input.Position.X, input.Position.Y)
 			for _, obj in ipairs(objs) do
 				if obj == openBtn then return end
@@ -326,7 +302,6 @@ minimizeBtn.MouseButton1Click:Connect(function()
 		end
 	end)
 
-	-- Open Button (Restore window)
 	local openBtn = Instance.new("TextButton")
 	openBtn.Size = UDim2.new(0, 23, 0, 17)
 	openBtn.Position = UDim2.new(0.848, 0, 0.13, 0)
@@ -340,7 +315,6 @@ minimizeBtn.MouseButton1Click:Connect(function()
 	Instance.new("UICorner", openBtn).CornerRadius = UDim.new(0, 4)
 	markNoDrag(openBtn)
 
-	-- Label
 	local label = Instance.new("TextLabel")
 	label.Size = UDim2.new(0, 122, 0, 15)
 	label.Position = UDim2.new(0, 4, 0.174, 0)
@@ -355,7 +329,6 @@ minimizeBtn.MouseButton1Click:Connect(function()
 	label.Parent = floatingBar
 	markNoDrag(label)
 
-	-- Open button click - restore MainWindow
 	openBtn.MouseButton1Click:Connect(function()
 		isOpen = true
 		MainWindow.Visible = true
@@ -366,7 +339,6 @@ minimizeBtn.MouseButton1Click:Connect(function()
 	end)
 end)
 
--- Open Button (from the original openButton) - just restore window
 openButton.MouseButton1Click:Connect(function()
 	isOpen = true
 	MainWindow.Visible = true
@@ -377,18 +349,7 @@ openButton.MouseButton1Click:Connect(function()
 	end
 end)
 
--- Also handle if user clicks the open button on floating bar
-
-openButton.MouseButton1Click:Connect(function()
-	isOpen = true
-	MainWindow.Visible = true
-	openButton.Visible = false
-end)
-
-
--- ====================================================
 -- Keybind to open/close the window (LeftAlt)
--- ====================================================
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then return end
 	if input.KeyCode == Enum.KeyCode.LeftAlt then
@@ -399,12 +360,12 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 end)
 
 -- ============================================================
---  CONTENT AREA
+--  CONTENT AREA (FIXED - more padding)
 -- ============================================================
 local ContentArea = Instance.new("CanvasGroup")
 ContentArea.Name = "ContentArea"
-ContentArea.Size = UDim2.new(1, -(NAV_WIDTH + 10), 1, -25)
-ContentArea.Position = UDim2.new(0, NAV_WIDTH + 5, 0, 25)
+ContentArea.Size = UDim2.new(1, -(NAV_WIDTH + 10), 1, -30)
+ContentArea.Position = UDim2.new(0, NAV_WIDTH + 5, 0, 30)
 ContentArea.BackgroundTransparency = 1
 ContentArea.BorderSizePixel = 0
 ContentArea.GroupTransparency = 0
@@ -421,7 +382,7 @@ BlockInputFrame.Parent = ContentArea
 markNoDrag(BlockInputFrame)
 
 -- ============================================================
---  NAVBAR
+--  NAVBAR (FIXED - with scrolling tabs)
 -- ============================================================
 local Navbar = Instance.new("Frame")
 Navbar.Name = "Navbar"
@@ -432,6 +393,25 @@ Navbar.ZIndex = 10
 Navbar.Parent = MainWindow
 Instance.new("UICorner", Navbar).CornerRadius = UDim.new(0, 6)
 
+-- NavScroll - allows tabs to scroll vertically
+local NavScroll = Instance.new("ScrollingFrame")
+NavScroll.Name = "NavScroll"
+NavScroll.Size = UDim2.new(1, 0, 1, -100)
+NavScroll.Position = UDim2.new(0, 0, 0, 87)
+NavScroll.BackgroundTransparency = 1
+NavScroll.BorderSizePixel = 0
+NavScroll.ScrollBarThickness = 3
+NavScroll.ScrollBarImageColor3 = THEME.Border
+NavScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+NavScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+NavScroll.ZIndex = 11
+NavScroll.Parent = Navbar
+
+local NavList = Instance.new("UIListLayout")
+NavList.SortOrder = Enum.SortOrder.LayoutOrder
+NavList.Padding = UDim.new(0, 4)
+NavList.Parent = NavScroll
+
 local NavbarBorder = Instance.new("Frame")
 NavbarBorder.Size = UDim2.new(0, 1, 1, 0)
 NavbarBorder.Position = UDim2.new(1, -1, 0, 0)
@@ -441,12 +421,12 @@ NavbarBorder.ZIndex = 11
 NavbarBorder.Parent = Navbar
 
 -- ============================================================
---  COLLAPSE BUTTON
+--  COLLAPSE BUTTON (FIXED - below tabs)
 -- ============================================================
 local CollapseButton = Instance.new("ImageButton")
 CollapseButton.Size = UDim2.new(0, 17, 0, 17)
 CollapseButton.AnchorPoint = Vector2.new(0.5, 0.5)
-CollapseButton.Position = UDim2.new(1, 0, 0, 47)
+CollapseButton.Position = UDim2.new(1, 0, 0, 87) -- Below tabs
 CollapseButton.BackgroundColor3 = THEME.ChildBg
 CollapseButton.Image = ICONS.collapse
 CollapseButton.ImageColor3 = THEME.TextDisabled
@@ -457,6 +437,9 @@ local cbStroke = Instance.new("UIStroke", CollapseButton)
 cbStroke.Color = THEME.Border; cbStroke.Thickness = 1
 markNoDrag(CollapseButton)
 
+-- ============================================================
+--  TAB INDICATOR (FIXED - tracks selected tab)
+-- ============================================================
 local TabIndicator = Instance.new("Frame")
 TabIndicator.Size = UDim2.new(0, 2, 0, 24)
 TabIndicator.Position = UDim2.new(1, -2, 0, 87)
@@ -474,6 +457,9 @@ local targetIndicatorY = 87
 local tabs = {}
 local activeTabId = nil
 
+-- ============================================================
+--  SWITCH TAB (FIXED - calculates Y properly)
+-- ============================================================
 local function switchTab(id)
 	if activeTabId == id then return end
 	for tabId, tabData in pairs(tabs) do
@@ -483,7 +469,8 @@ local function switchTab(id)
 			tabData.Container.Visible = true
 			tabData.Container.GroupTransparency = 1
 			TweenService:Create(tabData.Container, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {GroupTransparency = 0}):Play()
-			targetIndicatorY = tabData.Button.Position.Y.Offset
+			-- Calculate Y position: 87 + (tabId - 1) * 28
+			targetIndicatorY = 87 + (id - 1) * 28
 			TabIndicator.Visible = true
 		else
 			tabData.Icon.ImageColor3 = THEME.TextDisabled
@@ -502,8 +489,11 @@ local function switchTab(id)
 	activeTabId = id
 end
 
+-- ============================================================
+--  RENDER LOOP (FIXED)
+-- ============================================================
 RunService.RenderStepped:Connect(function()
-	local tW = navbarCollapsed and NAV_WIDTH or (isMobile and 100 or 150)
+	local tW = navbarCollapsed and NAV_WIDTH or NAV_EXPANDED
 	currentNavbarWidth = currentNavbarWidth + (tW - currentNavbarWidth) * 0.15
 	Navbar.Size = UDim2.new(0, currentNavbarWidth, 1, 0)
 	local tA = navbarCollapsed and 0 or 0.7
@@ -522,17 +512,16 @@ end)
 CollapseButton.MouseButton1Click:Connect(function() navbarCollapsed = not navbarCollapsed end)
 
 -- ============================================================
---  ADD TAB
+--  ADD TAB (FIXED - uses NavScroll)
 -- ============================================================
 local function AddTab(id, name, icon)
 	local btn = Instance.new("TextButton")
 	btn.Name = name .. "Tab"
 	btn.Size = UDim2.new(1, 0, 0, 24)
-	btn.Position = UDim2.new(0, 0, 0, 87 + (id - 1) * 40)
 	btn.BackgroundTransparency = 1
 	btn.Text = ""
 	btn.ZIndex = 12
-	btn.Parent = Navbar
+	btn.Parent = NavScroll  -- Changed from Navbar to NavScroll
 
 	local ic = Instance.new("ImageLabel")
 	ic.Size = UDim2.new(0, 16, 0, 16)
@@ -549,7 +538,7 @@ local function AddTab(id, name, icon)
 	lbl.BackgroundTransparency = 1
 	lbl.Text = name
 	lbl.TextColor3 = THEME.TextDisabled
-	lbl.TextSize = isMobile and 11 or 13
+	lbl.TextSize = isMobile and 10 or 13
 	ApplyFont(lbl, "header")
 	lbl.TextXAlignment = Enum.TextXAlignment.Left
 	lbl.ClipsDescendants = true
