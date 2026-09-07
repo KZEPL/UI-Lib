@@ -1,3 +1,5 @@
+-- Main UI lib
+
 local Release = "Release 1"
 
 local Players = game:GetService("Players")
@@ -381,6 +383,19 @@ openButton.MouseButton1Click:Connect(function()
 	isOpen = true
 	MainWindow.Visible = true
 	openButton.Visible = false
+end)
+
+
+-- ====================================================
+-- Keybind to open/close the window (LeftAlt)
+-- ====================================================
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.LeftAlt then
+		isOpen = not isOpen
+		MainWindow.Visible = isOpen
+		openButton.Visible = not isOpen
+	end
 end)
 
 -- ============================================================
