@@ -137,8 +137,8 @@ SettingsGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 SettingsGui.Parent = playerGui
 
 -- MOBILE SIZE: 337x191 (as requested)
-local UI_WIDTH = isMobile and 337 or 650
-local UI_HEIGHT = isMobile and 191 or 450
+local UI_WIDTH = isMobile and 492 or 650
+local UI_HEIGHT = isMobile and 351 or 450
 local NAV_WIDTH = isMobile and 40 or 50
 local CONTENT_OFFSET = isMobile and 65 or 81
 local TAB_BUTTON_WIDTH = isMobile and 65 or 90
