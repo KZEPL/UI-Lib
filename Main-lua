@@ -867,143 +867,155 @@ local function AddSlider(parent, labelText, min, max, default, callback)
 	end
 end
 
--- ============================================================
---  DROPDOWN (Mobile optimized)
--- ============================================================
 local function AddDropdown(parent, labelText, options, defaultIndex, callback)
-	local selectedIndex = defaultIndex or 1
-	local row = Instance.new("Frame")
-	row.Size = UDim2.new(1, 0, 0, isMobile and 20 or 22)
-	row.BackgroundTransparency = 1
-	row.Parent = parent
+    local selectedIndex = defaultIndex or 1
+    local currentOptions = options
+    
+    -- Make sure selectedIndex is valid
+    if selectedIndex > #currentOptions then selectedIndex = 1 end
+    if selectedIndex < 1 then selectedIndex = 1 end
+    
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, isMobile and 20 or 22)
+    row.BackgroundTransparency = 1
+    row.Parent = parent
 
-	local lbl = Instance.new("TextLabel")
-	lbl.Size = UDim2.new(0.4, 0, 1, 0)
-	lbl.BackgroundTransparency = 1
-	lbl.Text = labelText
-	lbl.TextColor3 = THEME.Text
-	lbl.TextSize = isMobile and 11 or 13
-	ApplyFont(lbl, "label")
-	lbl.TextXAlignment = Enum.TextXAlignment.Left
-	lbl.Parent = row
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.4, 0, 1, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = THEME.Text
+    lbl.TextSize = isMobile and 11 or 13
+    ApplyFont(lbl, "label")
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
 
-	local btn = Instance.new("TextButton")
-	btn.Size = UDim2.new(0.55, 0, 1, 0)
-	btn.Position = UDim2.new(0.42, 0, 0, 0)
-	btn.BackgroundColor3 = THEME.FrameBg
-	btn.BorderSizePixel = 0
-	btn.Text = "  " .. options[selectedIndex]
-	btn.TextColor3 = THEME.TextDisabled
-	btn.TextSize = isMobile and 10 or 12
-	ApplyFont(btn, "value")
-	btn.TextXAlignment = Enum.TextXAlignment.Left
-	btn.AutoButtonColor = false
-	btn.Parent = row
-	markNoDrag(btn)
-	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 3)
-	local bs = Instance.new("UIStroke", btn); bs.Color = THEME.Border; bs.Thickness = 1
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.55, 0, 1, 0)
+    btn.Position = UDim2.new(0.42, 0, 0, 0)
+    btn.BackgroundColor3 = THEME.FrameBg
+    btn.BorderSizePixel = 0
+    btn.Text = "  " .. currentOptions[selectedIndex]
+    btn.TextColor3 = THEME.TextDisabled
+    btn.TextSize = isMobile and 10 or 12
+    ApplyFont(btn, "value")
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.AutoButtonColor = false
+    btn.Parent = row
+    markNoDrag(btn)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 3)
+    local bs = Instance.new("UIStroke", btn); bs.Color = THEME.Border; bs.Thickness = 1
 
-	local arrow = Instance.new("TextLabel")
-	arrow.Size = UDim2.new(0, 18, 1, 0)
-	arrow.Position = UDim2.new(1, -18, 0, 0)
-	arrow.BackgroundTransparency = 1
-	arrow.Text = "▼"
-	arrow.TextColor3 = THEME.TextDisabled
-	arrow.TextSize = isMobile and 8 or 9
-	arrow.Font = Enum.Font.Gotham
-	arrow.Parent = btn
+    local arrow = Instance.new("TextLabel")
+    arrow.Size = UDim2.new(0, 18, 1, 0)
+    arrow.Position = UDim2.new(1, -18, 0, 0)
+    arrow.BackgroundTransparency = 1
+    arrow.Text = "▼"
+    arrow.TextColor3 = THEME.TextDisabled
+    arrow.TextSize = isMobile and 8 or 9
+    arrow.Font = Enum.Font.Gotham
+    arrow.Parent = btn
 
-	local open = false
-	local listFrame = nil
+    local open = false
+    local listFrame = nil
 
-	local function closeList()
-		open = false
-		arrow.Text = "▼"
-		if listFrame then listFrame:Destroy(); listFrame = nil end
-	end
+    local function closeList()
+        open = false
+        arrow.Text = "▼"
+        if listFrame then listFrame:Destroy(); listFrame = nil end
+    end
 
-	btn.MouseButton1Click:Connect(function()
-		open = not open
-		if open then
-			arrow.Text = "▲"
-			listFrame = Instance.new("Frame")
-			local relPos = btn.AbsolutePosition - MainWindow.AbsolutePosition
-			listFrame.Position = UDim2.new(0, relPos.X, 0, relPos.Y + btn.AbsoluteSize.Y + 2)
-			listFrame.Size = UDim2.new(0, btn.AbsoluteSize.X, 0, math.min(#options * (isMobile and 20 or 24) + 4, isMobile and 100 or 130))
-			listFrame.BackgroundColor3 = THEME.PopupBg
-			listFrame.BorderSizePixel = 0
-			listFrame.ZIndex = 200
-			listFrame.Active = true
-			listFrame.Parent = MainWindow
-			markNoDrag(listFrame)
-			Instance.new("UICorner", listFrame).CornerRadius = UDim.new(0, 3)
-			local ls = Instance.new("UIStroke", listFrame); ls.Color = THEME.Border; ls.Thickness = 1
+    local function updateButton(text)
+        btn.Text = "  " .. text
+    end
 
-			local scroll = Instance.new("ScrollingFrame")
-			scroll.Size = UDim2.new(1, 0, 1, 0)
-			scroll.BackgroundTransparency = 1
-			scroll.BorderSizePixel = 0
-			scroll.ScrollBarThickness = 4
-			scroll.ScrollBarImageColor3 = THEME.Border
-			scroll.CanvasSize = UDim2.new(1, 0, 0, #options * (isMobile and 20 or 24))
-			scroll.ZIndex = 201
-			scroll.Parent = listFrame
-			local sl = Instance.new("UIListLayout", scroll); sl.SortOrder = Enum.SortOrder.LayoutOrder
+    btn.MouseButton1Click:Connect(function()
+        open = not open
+        if open then
+            arrow.Text = "▲"
+            -- Destroy old list if exists
+            if listFrame then listFrame:Destroy(); listFrame = nil end
+            
+            listFrame = Instance.new("Frame")
+            local relPos = btn.AbsolutePosition - MainWindow.AbsolutePosition
+            listFrame.Position = UDim2.new(0, relPos.X, 0, relPos.Y + btn.AbsoluteSize.Y + 2)
+            listFrame.Size = UDim2.new(0, btn.AbsoluteSize.X, 0, math.min(#currentOptions * (isMobile and 20 or 24) + 4, isMobile and 100 or 130))
+            listFrame.BackgroundColor3 = THEME.PopupBg
+            listFrame.BorderSizePixel = 0
+            listFrame.ZIndex = 200
+            listFrame.Active = true
+            listFrame.Parent = MainWindow
+            markNoDrag(listFrame)
+            Instance.new("UICorner", listFrame).CornerRadius = UDim.new(0, 3)
+            local ls = Instance.new("UIStroke", listFrame); ls.Color = THEME.Border; ls.Thickness = 1
 
-			for idx, opt in ipairs(options) do
-				local isSelected = idx == selectedIndex
-				local optBtn = Instance.new("TextButton")
-				optBtn.Size = UDim2.new(1, 0, 0, isMobile and 20 or 24)
-				optBtn.BackgroundColor3 = THEME.PopupBg
-				optBtn.BorderSizePixel = 0
-				optBtn.Text = ""
-				optBtn.AutoButtonColor = false
-				optBtn.ZIndex = 202
-				optBtn.Parent = scroll
+            local scroll = Instance.new("ScrollingFrame")
+            scroll.Size = UDim2.new(1, 0, 1, 0)
+            scroll.BackgroundTransparency = 1
+            scroll.BorderSizePixel = 0
+            scroll.ScrollBarThickness = 4
+            scroll.ScrollBarImageColor3 = THEME.Border
+            scroll.CanvasSize = UDim2.new(1, 0, 0, #currentOptions * (isMobile and 20 or 24))
+            scroll.ZIndex = 201
+            scroll.Parent = listFrame
+            local sl = Instance.new("UIListLayout", scroll); sl.SortOrder = Enum.SortOrder.LayoutOrder
 
-				local optLbl = Instance.new("TextLabel")
-				optLbl.Size = UDim2.new(1, -30, 1, 0)
-				optLbl.Position = UDim2.new(0, 8, 0, 0)
-				optLbl.BackgroundTransparency = 1
-				optLbl.Text = opt
-				optLbl.TextColor3 = isSelected and THEME.Scheme or THEME.Text
-				optLbl.TextSize = isMobile and 10 or 12
-				ApplyFont(optLbl, "value")
-				optLbl.TextXAlignment = Enum.TextXAlignment.Left
-				optLbl.ZIndex = 203
-				optLbl.Parent = optBtn
+            for idx, opt in ipairs(currentOptions) do
+                local isSelected = idx == selectedIndex
+                local optBtn = Instance.new("TextButton")
+                optBtn.Size = UDim2.new(1, 0, 0, isMobile and 20 or 24)
+                optBtn.BackgroundColor3 = THEME.PopupBg
+                optBtn.BorderSizePixel = 0
+                optBtn.Text = ""
+                optBtn.AutoButtonColor = false
+                optBtn.ZIndex = 202
+                optBtn.Parent = scroll
 
-				optBtn.MouseEnter:Connect(function()
-					if idx ~= selectedIndex then optBtn.BackgroundColor3 = THEME.FrameBg end
-				end)
-				optBtn.MouseLeave:Connect(function()
-					if idx ~= selectedIndex then optBtn.BackgroundColor3 = THEME.PopupBg end
-				end)
-				optBtn.MouseButton1Click:Connect(function()
-					selectedIndex = idx
-					btn.Text = "  " .. opt
-					closeList()
-					if callback then callback(opt) end
-				end)
-			end
-		else
-			closeList()
-		end
-	end)
+                local optLbl = Instance.new("TextLabel")
+                optLbl.Size = UDim2.new(1, -30, 1, 0)
+                optLbl.Position = UDim2.new(0, 8, 0, 0)
+                optLbl.BackgroundTransparency = 1
+                optLbl.Text = opt
+                optLbl.TextColor3 = isSelected and THEME.Scheme or THEME.Text
+                optLbl.TextSize = isMobile and 10 or 12
+                ApplyFont(optLbl, "value")
+                optLbl.TextXAlignment = Enum.TextXAlignment.Left
+                optLbl.ZIndex = 203
+                optLbl.Parent = optBtn
 
-	UserInputService.InputBegan:Connect(function(i)
-		if open and i.UserInputType == Enum.UserInputType.MouseButton1 then
-			task.wait()
-			if open and listFrame then
-				local mPos = UserInputService:GetMouseLocation()
-				local ax, ay = listFrame.AbsolutePosition.X, listFrame.AbsolutePosition.Y
-				local sx, sy = listFrame.AbsoluteSize.X, listFrame.AbsoluteSize.Y
-				if mPos.X < ax or mPos.X > ax + sx or mPos.Y < ay or mPos.Y > ay + sy then
-					closeList()
-				end
-			end
-		end
-	end)
+                optBtn.MouseEnter:Connect(function()
+                    if idx ~= selectedIndex then optBtn.BackgroundColor3 = THEME.FrameBg end
+                end)
+                optBtn.MouseLeave:Connect(function()
+                    if idx ~= selectedIndex then optBtn.BackgroundColor3 = THEME.PopupBg end
+                end)
+                optBtn.MouseButton1Click:Connect(function()
+                    selectedIndex = idx
+                    updateButton(opt)
+                    closeList()
+                    if callback then callback(opt) end
+                end)
+            end
+        else
+            closeList()
+        end
+    end)
+
+    UserInputService.InputBegan:Connect(function(i)
+        if open and i.UserInputType == Enum.UserInputType.MouseButton1 then
+            task.wait()
+            if open and listFrame then
+                local mPos = UserInputService:GetMouseLocation()
+                local ax, ay = listFrame.AbsolutePosition.X, listFrame.AbsolutePosition.Y
+                local sx, sy = listFrame.AbsoluteSize.X, listFrame.AbsoluteSize.Y
+                if mPos.X < ax or mPos.X > ax + sx or mPos.Y < ay or mPos.Y > ay + sy then
+                    closeList()
+                end
+            end
+        end
+    end)
+    
+    return btn
 end
 
 -- ============================================================
