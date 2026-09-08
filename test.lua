@@ -1,5 +1,5 @@
 -- ============================================================
---  PREVIEWLIBARY - Converted from KYZENO X PANEL
+--  PREVIEWLIBARY - Fixed Scrolling
 --  Navigation on Left Side
 -- ============================================================
 
@@ -54,7 +54,7 @@ SettingsGui.Parent = playerGui
 
 -- Sizes
 local UI_WIDTH = isMobile and 550 or 650
-local UI_HEIGHT = isMobile and 400 or 480
+local UI_HEIGHT = isMobile and 400 or 500
 local NAV_WIDTH = 50
 local NAV_EXPANDED = 160
 
@@ -181,7 +181,7 @@ CloseBtn.MouseButton1Click:Connect(function()
     OpenButton.Visible = true
 end)
 
--- Open Button (appears when window is closed)
+-- Open Button
 local OpenButton = Instance.new("ImageButton")
 OpenButton.Size = UDim2.new(0, 50, 0, 50)
 OpenButton.Position = UDim2.new(0.02, 0, 0.15, 0)
@@ -251,7 +251,6 @@ SidebarBorder.BorderSizePixel = 0
 SidebarBorder.ZIndex = 11
 SidebarBorder.Parent = Sidebar
 
--- Sidebar Scroll (for tabs)
 local SidebarScroll = Instance.new("ScrollingFrame")
 SidebarScroll.Size = UDim2.new(1, 0, 1, -20)
 SidebarScroll.Position = UDim2.new(0, 0, 0, 5)
@@ -281,35 +280,39 @@ TabIndicator.Parent = Sidebar
 Instance.new("UICorner", TabIndicator).CornerRadius = UDim.new(0, 2)
 
 -- ============================================================
---  CONTENT AREA
+--  CONTENT AREA (FIXED SCROLLING)
 -- ============================================================
-local ContentArea = Instance.new("CanvasGroup")
+local ContentArea = Instance.new("Frame")  -- Changed from CanvasGroup to Frame
 ContentArea.Name = "ContentArea"
 ContentArea.Size = UDim2.new(1, -(NAV_WIDTH + 10), 1, -50)
 ContentArea.Position = UDim2.new(0, NAV_WIDTH + 5, 0, 50)
 ContentArea.BackgroundTransparency = 1
 ContentArea.BorderSizePixel = 0
-ContentArea.GroupTransparency = 0
 ContentArea.ZIndex = 2
 ContentArea.Parent = MainWindow
 
--- Content Scroll
+-- Main Content ScrollingFrame (FIXED)
 local ContentScroll = Instance.new("ScrollingFrame")
+ContentScroll.Name = "ContentScroll"
 ContentScroll.Size = UDim2.new(1, 0, 1, 0)
+ContentScroll.Position = UDim2.new(0, 0, 0, 0)
 ContentScroll.BackgroundTransparency = 1
 ContentScroll.BorderSizePixel = 0
-ContentScroll.ScrollBarThickness = 4
+ContentScroll.ScrollBarThickness = 8
 ContentScroll.ScrollBarImageColor3 = THEME.ACCENT
 ContentScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 ContentScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ContentScroll.ScrollingDirection = Enum.ScrollingDirection.Y
 ContentScroll.ZIndex = 3
 ContentScroll.Parent = ContentArea
 
+-- Content Layout
 local ContentLayout = Instance.new("UIListLayout")
 ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ContentLayout.Padding = UDim.new(0, 6)
 ContentLayout.Parent = ContentScroll
 
+-- Content Padding
 local ContentPad = Instance.new("UIPadding")
 ContentPad.PaddingTop = UDim.new(0, 8)
 ContentPad.PaddingLeft = UDim.new(0, 8)
@@ -352,13 +355,12 @@ local currentIndicatorY = 0
 -- ============================================================
 local function switchTab(id)
     if activeTabId == id then return end
-    
+
     for tabId, tabData in pairs(tabs) do
         if tabId == id then
             tabData.Icon.ImageColor3 = THEME.Text
             tabData.Text.TextColor3 = THEME.Text
             tabData.Container.Visible = true
-            tabData.Container.GroupTransparency = 0
             targetIndicatorY = (id - 1) * 28 + 5
             TabIndicator.Visible = true
         else
@@ -379,13 +381,13 @@ RunService.RenderStepped:Connect(function()
     local tW = navbarCollapsed and NAV_WIDTH or NAV_EXPANDED
     currentNavbarWidth = currentNavbarWidth + (tW - currentNavbarWidth) * 0.15
     Sidebar.Size = UDim2.new(0, currentNavbarWidth, 1, -50)
-    
+
     currentIndicatorY = currentIndicatorY + (targetIndicatorY - currentIndicatorY) * 0.15
     TabIndicator.Position = UDim2.new(1, -2, 0, currentIndicatorY)
-    
+
     local tR = navbarCollapsed and 0 or 180
     CollapseBtn.Rotation = CollapseBtn.Rotation + (tR - CollapseBtn.Rotation) * 0.15
-    
+
     local contentAlpha = math.clamp((currentNavbarWidth - NAV_WIDTH) / 100, 0, 1)
     for _, tabData in pairs(tabs) do
         tabData.Text.TextTransparency = 1 - contentAlpha
@@ -431,6 +433,18 @@ local function AddTab(id, name, icon)
     container.GroupTransparency = 0
     container.Visible = false
     container.Parent = ContentScroll
+
+    -- Title inside tab
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -20, 0, 30)
+    title.Position = UDim2.new(0, 10, 0, 0)
+    title.BackgroundTransparency = 1
+    title.Text = name
+    title.TextColor3 = THEME.Text
+    title.TextSize = 18
+    title.Font = Enum.Font.Fantasy
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = container
 
     tabs[id] = { Button = btn, Icon = ic, Text = lbl, Container = container }
 
@@ -529,7 +543,7 @@ local function AddToggle(parent, labelText, default, callback)
         btn.BackgroundColor3 = state and THEME.ACCENT or THEME.LIGHT
         if callback then callback(state) end
     end)
-    
+
     return container
 end
 
@@ -729,8 +743,100 @@ local function AddTextInput(parent, labelText, placeholder, callback)
     return container, tb
 end
 
+-- Color Picker
+local function AddColorpicker(parent, labelText, defaultColor, callback)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 30)
+    row.BackgroundTransparency = 1
+    row.Parent = parent
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.6, 0, 1, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = THEME.Text
+    lbl.TextSize = 12
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
+
+    local preview = Instance.new("TextButton")
+    preview.Size = UDim2.new(0, 30, 0, 20)
+    preview.Position = UDim2.new(1, -35, 0.5, -10)
+    preview.BackgroundColor3 = defaultColor
+    preview.BorderSizePixel = 0
+    preview.Text = ""
+    preview.AutoButtonColor = false
+    preview.Parent = row
+    Instance.new("UICorner", preview).CornerRadius = UDim.new(0, 4)
+
+    preview.MouseButton1Click:Connect(function()
+        local colors = {
+            Color3.fromRGB(255, 70, 70), Color3.fromRGB(70, 255, 70),
+            Color3.fromRGB(70, 70, 255), Color3.fromRGB(255, 255, 70),
+            Color3.fromRGB(255, 70, 255), Color3.fromRGB(70, 255, 255),
+            Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 140, 0),
+            Color3.fromRGB(140, 0, 255), Color3.fromRGB(0, 210, 230),
+        }
+
+        local picker = Instance.new("Frame")
+        picker.Size = UDim2.new(0, 200, 0, 150)
+        picker.Position = UDim2.new(0.5, -100, 0.5, -75)
+        picker.BackgroundColor3 = THEME.PopupBg
+        picker.BorderSizePixel = 0
+        picker.ZIndex = 250
+        picker.Parent = MainWindow
+        Instance.new("UICorner", picker).CornerRadius = UDim.new(0, 4)
+
+        local grid = Instance.new("Frame")
+        grid.Size = UDim2.new(1, -20, 1, -20)
+        grid.Position = UDim2.new(0, 10, 0, 10)
+        grid.BackgroundTransparency = 1
+        grid.Parent = picker
+
+        local ul = Instance.new("UIListLayout", grid)
+        ul.FillDirection = Enum.FillDirection.Horizontal
+        ul.SortOrder = Enum.SortOrder.LayoutOrder
+        ul.Padding = UDim.new(0, 8)
+        ul.Wrap = true
+
+        for _, color in ipairs(colors) do
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(0, 28, 0, 28)
+            btn.BackgroundColor3 = color
+            btn.BorderSizePixel = 0
+            btn.Text = ""
+            btn.AutoButtonColor = false
+            btn.Parent = grid
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+
+            btn.MouseButton1Click:Connect(function()
+                preview.BackgroundColor3 = color
+                if callback then callback(color) end
+                picker:Destroy()
+            end)
+        end
+
+        local closeConn
+        closeConn = UserInputService.InputBegan:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                task.wait()
+                local mPos = UserInputService:GetMouseLocation()
+                local ax, ay = picker.AbsolutePosition.X, picker.AbsolutePosition.Y
+                local sx, sy = picker.AbsoluteSize.X, picker.AbsoluteSize.Y
+                if mPos.X < ax or mPos.X > ax + sx or mPos.Y < ay or mPos.Y > ay + sy then
+                    picker:Destroy()
+                    closeConn:Disconnect()
+                end
+            end
+        end)
+    end)
+
+    return {}
+end
+
 -- ============================================================
---  MAKE SECTION
+--  MAKE SECTION (FIXED - properly sizes content)
 -- ============================================================
 local function makeSection(parent, name)
     local hasHeader = name ~= nil and name ~= ""
@@ -770,17 +876,34 @@ local function makeSection(parent, name)
     inner.Position = UDim2.new(0, 15, 0, headerH + 5)
     inner.BackgroundTransparency = 1
     inner.Parent = bg
-    
+
     local il = Instance.new("UIListLayout", inner)
     il.SortOrder = Enum.SortOrder.LayoutOrder
     il.Padding = UDim.new(0, 8)
 
     local function resize()
         local h = il.AbsoluteContentSize.Y
-        inner.Size = UDim2.new(1, -30, 0, h)
-        box.Size = UDim2.new(1, 0, 0, headerH + 5 + h + 15)
+        if h > 0 then
+            inner.Size = UDim2.new(1, -30, 0, h)
+            box.Size = UDim2.new(1, 0, 0, headerH + 5 + h + 15)
+        else
+            inner.Size = UDim2.new(1, -30, 0, 4)
+            box.Size = UDim2.new(1, 0, 0, headerH + 10 + 15)
+        end
     end
+    
     il:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(resize)
+    
+    -- Also resize when children are added/removed
+    inner.ChildAdded:Connect(function() 
+        task.wait() 
+        resize() 
+    end)
+    inner.ChildRemoved:Connect(function() 
+        task.wait() 
+        resize() 
+    end)
+    
     task.wait(0.05)
     resize()
 
@@ -863,96 +986,10 @@ function ElementMethods:CreateColorPicker(cfg)
     local flag = cfg.Flag
     local color = cfg.Color or Color3.fromRGB(255, 255, 255)
     if flag then PreviewLibary.Flags[flag] = color end
-    -- Simple color picker using buttons
-    local row = Instance.new("Frame")
-    row.Size = UDim2.new(1, 0, 0, 30)
-    row.BackgroundTransparency = 1
-    row.Parent = self.Inner
-    
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(0.6, 0, 1, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = cfg.Name or "Color Picker"
-    lbl.TextColor3 = THEME.Text
-    lbl.TextSize = 12
-    lbl.Font = Enum.Font.Gotham
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
-    lbl.Parent = row
-    
-    local preview = Instance.new("TextButton")
-    preview.Size = UDim2.new(0, 30, 0, 20)
-    preview.Position = UDim2.new(1, -35, 0.5, -10)
-    preview.BackgroundColor3 = color
-    preview.BorderSizePixel = 0
-    preview.Text = ""
-    preview.AutoButtonColor = false
-    preview.Parent = row
-    Instance.new("UICorner", preview).CornerRadius = UDim.new(0, 4)
-    
-    -- Simple color preset picker
-    preview.MouseButton1Click:Connect(function()
-        local colors = {
-            Color3.fromRGB(255, 70, 70), Color3.fromRGB(70, 255, 70),
-            Color3.fromRGB(70, 70, 255), Color3.fromRGB(255, 255, 70),
-            Color3.fromRGB(255, 70, 255), Color3.fromRGB(70, 255, 255),
-            Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 140, 0),
-            Color3.fromRGB(140, 0, 255), Color3.fromRGB(0, 210, 230),
-        }
-        
-        local picker = Instance.new("Frame")
-        picker.Size = UDim2.new(0, 200, 0, 150)
-        picker.Position = UDim2.new(0.5, -100, 0.5, -75)
-        picker.BackgroundColor3 = THEME.PopupBg
-        picker.BorderSizePixel = 0
-        picker.ZIndex = 250
-        picker.Parent = MainWindow
-        Instance.new("UICorner", picker).CornerRadius = UDim.new(0, 4)
-        
-        local grid = Instance.new("Frame")
-        grid.Size = UDim2.new(1, -20, 1, -20)
-        grid.Position = UDim2.new(0, 10, 0, 10)
-        grid.BackgroundTransparency = 1
-        grid.Parent = picker
-        
-        local ul = Instance.new("UIListLayout", grid)
-        ul.FillDirection = Enum.FillDirection.Horizontal
-        ul.SortOrder = Enum.SortOrder.LayoutOrder
-        ul.Padding = UDim.new(0, 8)
-        ul.Wrap = true
-        
-        for _, color in ipairs(colors) do
-            local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(0, 28, 0, 28)
-            btn.BackgroundColor3 = color
-            btn.BorderSizePixel = 0
-            btn.Text = ""
-            btn.AutoButtonColor = false
-            btn.Parent = grid
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-            
-            btn.MouseButton1Click:Connect(function()
-                preview.BackgroundColor3 = color
-                if flag then PreviewLibary.Flags[flag] = color end
-                if cfg.Callback then cfg.Callback(color) end
-                picker:Destroy()
-            end)
-        end
-        
-        local closeConn
-        closeConn = UserInputService.InputBegan:Connect(function(i)
-            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                task.wait()
-                local mPos = UserInputService:GetMouseLocation()
-                local ax, ay = picker.AbsolutePosition.X, picker.AbsolutePosition.Y
-                local sx, sy = picker.AbsoluteSize.X, picker.AbsoluteSize.Y
-                if mPos.X < ax or mPos.X > ax + sx or mPos.Y < ay or mPos.Y > ay + sy then
-                    picker:Destroy()
-                    closeConn:Disconnect()
-                end
-            end
-        end)
+    AddColorpicker(self.Inner, cfg.Name or "Color Picker", color, function(c)
+        if flag then PreviewLibary.Flags[flag] = c end
+        if cfg.Callback then cfg.Callback(c) end
     end)
-    
     return {}
 end
 
@@ -999,9 +1036,10 @@ function WindowMethods:CreateTab(name, icon)
     content.Size = UDim2.new(1, 0, 1, 0)
     content.BackgroundTransparency = 1
     content.Parent = container
-    
+
+    -- Create a container for sections inside this tab
     local inner = makeSection(content, nil)
-    
+
     local tab = setmetatable({
         _id = id,
         Container = container,
