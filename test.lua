@@ -1,14 +1,6 @@
--- ============================================================
---  PREVIEWLIBARY v2.0 - Based on KYZENO X PANEL v4.3
---  PC & Mobile Support | Draggable | Tabs | All UI Elements
--- ============================================================
-
 local PreviewLibary = {}
 PreviewLibary.Release = "v2.0"
 
--- ============================================================
---  SERVICES
--- ============================================================
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -20,9 +12,6 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
--- ============================================================
---  DEFAULT THEME
--- ============================================================
 local DEFAULT_THEME = {
     BG = Color3.fromRGB(8, 18, 22),
     DARK = Color3.fromRGB(12, 28, 34),
@@ -38,15 +27,11 @@ local DEFAULT_THEME = {
     YELLOW = Color3.fromRGB(255, 210, 70),
 }
 
--- ============================================================
---  MAIN UI CLASS
--- ============================================================
 local UI = {}
 UI.__index = UI
 
 function UI.new(config)
     config = config or {}
-    
     local self = setmetatable({}, UI)
     self.Name = config.Name or "PreviewLibary"
     self.Theme = config.Theme or DEFAULT_THEME
@@ -55,31 +40,22 @@ function UI.new(config)
     self.Tabs = {}
     self.CurrentTab = nil
     self._contentAreas = {}
-    
-    -- Create GUI
     self:_createGUI(config)
-    
     return self
 end
 
--- ============================================================
---  GUI CREATION
--- ============================================================
 function UI:_createGUI(config)
     local UI_WIDTH = isMobile and 550 or 580
     local UI_HEIGHT = isMobile and 400 or 450
     
-    -- Main ScreenGui
     self.ScreenGui = Instance.new("ScreenGui")
     self.ScreenGui.Name = self.Name .. "_UI"
     self.ScreenGui.ResetOnSpawn = false
     self.ScreenGui.IgnoreGuiInset = true
     self.ScreenGui.Parent = playerGui
     
-    -- Open Button (floating)
     self:_createOpenButton()
     
-    -- Main Frame
     self.MainFrame = Instance.new("Frame")
     self.MainFrame.Size = UDim2.new(0, UI_WIDTH, 0, UI_HEIGHT)
     self.MainFrame.Position = UDim2.new(0.5, -UI_WIDTH/2, 0.5, -UI_HEIGHT/2)
@@ -93,22 +69,12 @@ function UI:_createGUI(config)
     stroke.Color = self.Theme.ACCENT
     stroke.Thickness = 1.5
     
-    -- Make main frame draggable
     self:_makeDraggable(self.MainFrame, self.MainFrame)
-    
-    -- Header
     self:_createHeader()
-    
-    -- Navigation Bar
     self:_createNavBar()
-    
-    -- Sidebar
     self:_createSidebar()
-    
-    -- Content Area
     self:_createContentArea()
     
-    -- Keybind to toggle
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == Enum.KeyCode.LeftAlt then
             self.MainFrame.Visible = not self.MainFrame.Visible
@@ -116,9 +82,6 @@ function UI:_createGUI(config)
     end)
 end
 
--- ============================================================
---  OPEN BUTTON
--- ============================================================
 function UI:_createOpenButton()
     self.OpenButton = Instance.new("ImageButton")
     self.OpenButton.Size = UDim2.new(0, 50, 0, 50)
@@ -129,17 +92,12 @@ function UI:_createOpenButton()
     self.OpenButton.BackgroundTransparency = 1
     self.OpenButton.Parent = self.ScreenGui
     self:_round(self.OpenButton, 8)
-    
     self:_makeDraggable(self.OpenButton, self.OpenButton)
-    
     self.OpenButton.MouseButton1Click:Connect(function()
         self.MainFrame.Visible = not self.MainFrame.Visible
     end)
 end
 
--- ============================================================
---  HEADER
--- ============================================================
 function UI:_createHeader()
     local header = Instance.new("Frame")
     header.Size = UDim2.new(1, 0, 0, 50)
@@ -149,7 +107,6 @@ function UI:_createHeader()
     self:_round(header, 10)
     self:_makeDraggable(header, self.MainFrame)
     
-    -- Logo
     local logo = Instance.new("ImageLabel")
     logo.Size = UDim2.new(0, 35, 0, 35)
     logo.Position = UDim2.new(0, 12, 0.5, -17.5)
@@ -157,7 +114,6 @@ function UI:_createHeader()
     logo.Image = "rbxassetid://109578957492871"
     logo.Parent = header
     
-    -- Title
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(0, 200, 0, 25)
     title.Position = UDim2.new(0, 55, 0, 8)
@@ -169,7 +125,6 @@ function UI:_createHeader()
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.Parent = header
     
-    -- Subtitle
     local sub = Instance.new("TextLabel")
     sub.Size = UDim2.new(0, 180, 0, 12)
     sub.Position = UDim2.new(0, 55, 0, 32)
@@ -181,7 +136,6 @@ function UI:_createHeader()
     sub.TextXAlignment = Enum.TextXAlignment.Left
     sub.Parent = header
     
-    -- Close Button
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0, 30, 0, 30)
     closeBtn.Position = UDim2.new(1, -40, 0.5, -15)
@@ -192,15 +146,11 @@ function UI:_createHeader()
     closeBtn.Font = Enum.Font.GothamBold
     closeBtn.Parent = header
     self:_round(closeBtn, 6)
-    
     closeBtn.MouseButton1Click:Connect(function()
         self.MainFrame.Visible = false
     end)
 end
 
--- ============================================================
---  NAVIGATION BAR
--- ============================================================
 function UI:_createNavBar()
     self.NavScroll = Instance.new("ScrollingFrame")
     self.NavScroll.Size = UDim2.new(1, 0, 0, 35)
@@ -220,9 +170,6 @@ function UI:_createNavBar()
     layout.Padding = UDim.new(0, 0)
 end
 
--- ============================================================
---  SIDEBAR
--- ============================================================
 function UI:_createSidebar()
     local sidebar = Instance.new("Frame")
     sidebar.Size = UDim2.new(0, 160, 1, -85)
@@ -235,7 +182,6 @@ function UI:_createSidebar()
     stroke.Color = self.Theme.MID
     stroke.Thickness = 1
     
-    -- Player Info Title
     local title = Instance.new("TextLabel")
     title.Size = UDim2.new(1, -16, 0, 25)
     title.Position = UDim2.new(0, 8, 0, 8)
@@ -254,7 +200,6 @@ function UI:_createSidebar()
     line.BorderSizePixel = 0
     line.Parent = sidebar
     
-    -- Avatar
     local avatar = Instance.new("ImageLabel")
     avatar.Size = UDim2.new(0, 50, 0, 50)
     avatar.Position = UDim2.new(0.5, -25, 0, 42)
@@ -266,7 +211,6 @@ function UI:_createSidebar()
     avatar.Parent = sidebar
     self:_round(avatar, 25)
     
-    -- User ID
     local userRow = Instance.new("Frame")
     userRow.Size = UDim2.new(1, -16, 0, 20)
     userRow.Position = UDim2.new(0, 8, 0, 100)
@@ -284,7 +228,6 @@ function UI:_createSidebar()
     self.UserLabel.TextXAlignment = Enum.TextXAlignment.Left
     self.UserLabel.Parent = userRow
     
-    -- Display Name
     local nameRow = Instance.new("Frame")
     nameRow.Size = UDim2.new(1, -16, 0, 20)
     nameRow.Position = UDim2.new(0, 8, 0, 122)
@@ -302,7 +245,6 @@ function UI:_createSidebar()
     self.NameLabel.TextXAlignment = Enum.TextXAlignment.Left
     self.NameLabel.Parent = nameRow
     
-    -- FPS
     self.FPSLabel = Instance.new("TextLabel")
     self.FPSLabel.Size = UDim2.new(1, -16, 0, 16)
     self.FPSLabel.Position = UDim2.new(0, 8, 0, 146)
@@ -314,7 +256,6 @@ function UI:_createSidebar()
     self.FPSLabel.TextXAlignment = Enum.TextXAlignment.Left
     self.FPSLabel.Parent = sidebar
     
-    -- Time
     self.TimeLabel = Instance.new("TextLabel")
     self.TimeLabel.Size = UDim2.new(1, -16, 0, 16)
     self.TimeLabel.Position = UDim2.new(0, 8, 0, 164)
@@ -326,7 +267,6 @@ function UI:_createSidebar()
     self.TimeLabel.TextXAlignment = Enum.TextXAlignment.Left
     self.TimeLabel.Parent = sidebar
     
-    -- Credit
     local credit = Instance.new("TextLabel")
     credit.Size = UDim2.new(1, -16, 0, 30)
     credit.Position = UDim2.new(0, 8, 0, 185)
@@ -338,7 +278,6 @@ function UI:_createSidebar()
     credit.TextXAlignment = Enum.TextXAlignment.Left
     credit.Parent = sidebar
     
-    -- FPS/Time update loop
     local startTime = tick()
     local fps = 0
     local lastFrame = tick()
@@ -363,9 +302,6 @@ function UI:_createSidebar()
     end)
 end
 
--- ============================================================
---  CONTENT AREA
--- ============================================================
 function UI:_createContentArea()
     self.ContentArea = Instance.new("ScrollingFrame")
     self.ContentArea.Size = UDim2.new(1, -170, 1, -85)
@@ -390,11 +326,6 @@ function UI:_createContentArea()
     pad.PaddingBottom = UDim.new(0, 8)
 end
 
--- ============================================================
---  UI ELEMENTS
--- ============================================================
-
--- Section Title
 function UI:CreateSectionTitle(text)
     local f = Instance.new("Frame")
     f.Size = UDim2.new(1, 0, 0, 40)
@@ -433,7 +364,6 @@ function UI:CreateSectionTitle(text)
     return f
 end
 
--- Info Label
 function UI:CreateInfoLabel(text)
     local lbl = Instance.new("TextLabel")
     lbl.Size = UDim2.new(1, 0, 0, 18)
@@ -448,12 +378,10 @@ function UI:CreateInfoLabel(text)
     return lbl
 end
 
--- Label (for menus)
 function UI:CreateLabel(text)
     return self:CreateInfoLabel(text)
 end
 
--- Toggle
 function UI:CreateToggle(config)
     config = config or {}
     local labelText = config.Name or "Toggle"
@@ -505,7 +433,6 @@ function UI:CreateToggle(config)
     return container
 end
 
--- Slider
 function UI:CreateSlider(config)
     config = config or {}
     local labelText = config.Name or "Slider"
@@ -596,7 +523,6 @@ function UI:CreateSlider(config)
     return container
 end
 
--- Dropdown
 function UI:CreateDropdown(config)
     config = config or {}
     local labelText = config.Name or "Dropdown"
@@ -653,7 +579,6 @@ function UI:CreateDropdown(config)
     return btn
 end
 
--- Button
 function UI:CreateButton(config)
     config = config or {}
     local text = config.Name or "Button"
@@ -673,7 +598,6 @@ function UI:CreateButton(config)
     return btn
 end
 
--- Input
 function UI:CreateInput(config)
     config = config or {}
     local labelText = config.Name or "Input"
@@ -734,7 +658,6 @@ function UI:CreateInput(config)
     return container, tb
 end
 
--- Paragraph
 function UI:CreateParagraph(config)
     config = config or {}
     local title = config.Title or ""
@@ -775,11 +698,419 @@ function UI:CreateParagraph(config)
     return container
 end
 
--- ============================================================
---  TAB SYSTEM
--- ============================================================
+local ElementMethods = {}
+
+function ElementMethods:CreateButton(cfg)
+    cfg = cfg or {}
+    AddButton(self.Inner, cfg.Name or "Button", function()
+        if cfg.Callback then cfg.Callback() end
+    end)
+    return {}
+end
+
+function ElementMethods:CreateToggle(cfg)
+    cfg = cfg or {}
+    local flag = cfg.Flag
+    local value = cfg.CurrentValue or false
+    if flag then PreviewLibary.Flags[flag] = value end
+    AddToggle(self.Inner, cfg.Name or "Toggle", value, function(v)
+        if flag then PreviewLibary.Flags[flag] = v end
+        if cfg.Callback then cfg.Callback(v) end
+    end)
+    return {}
+end
+
+function ElementMethods:CreateSlider(cfg)
+    cfg = cfg or {}
+    local range = cfg.Range or {0, 100}
+    local flag = cfg.Flag
+    local value = cfg.CurrentValue or range[1]
+    if flag then PreviewLibary.Flags[flag] = value end
+    AddSlider(self.Inner, cfg.Name or "Slider", range[1], range[2], value, function(v)
+        if flag then PreviewLibary.Flags[flag] = v end
+        if cfg.Callback then cfg.Callback(v) end
+    end)
+    return {}
+end
+
+function ElementMethods:CreateDropdown(cfg)
+    cfg = cfg or {}
+    local options = cfg.Options or {}
+    local defaultIndex = 1
+    if cfg.CurrentOption then
+        for i, o in ipairs(options) do
+            if o == cfg.CurrentOption then defaultIndex = i break end
+        end
+    end
+    local flag = cfg.Flag
+    if flag then PreviewLibary.Flags[flag] = options[defaultIndex] end
+    AddDropdown(self.Inner, cfg.Name or "Dropdown", options, defaultIndex, function(opt)
+        if flag then PreviewLibary.Flags[flag] = opt end
+        if cfg.Callback then cfg.Callback(opt) end
+    end)
+    return {}
+end
+
+function ElementMethods:CreateColorPicker(cfg)
+    cfg = cfg or {}
+    local flag = cfg.Flag
+    local color = cfg.Color or Color3.fromRGB(255, 255, 255)
+    if flag then PreviewLibary.Flags[flag] = color end
+    AddColorpicker(self.Inner, cfg.Name or "Color Picker", color, function(c)
+        if flag then PreviewLibary.Flags[flag] = c end
+        if cfg.Callback then cfg.Callback(c) end
+    end)
+    return {}
+end
+
+function ElementMethods:CreateInput(cfg)
+    cfg = cfg or {}
+    AddInput(self.Inner, cfg.Name or "Input", cfg.PlaceholderText or "", function(txt)
+        if cfg.Callback then cfg.Callback(txt) end
+    end)
+    return {}
+end
+
+function ElementMethods:CreateLabel(text)
+    AddLabel(self.Inner, tostring(text))
+    return {}
+end
+
+function ElementMethods:CreateInfoLabel(text)
+    AddLabel(self.Inner, tostring(text))
+    return {}
+end
+
+function ElementMethods:CreateParagraph(cfg)
+    cfg = cfg or {}
+    AddParagraph(self.Inner, cfg.Title or "", cfg.Content or "")
+    return {}
+end
+
+local function AddButton(parent, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 34)
+    btn.BackgroundColor3 = THEME.ACCENT
+    btn.Text = text
+    btn.TextColor3 = THEME.WHITE
+    btn.TextSize = 12
+    btn.Font = Enum.Font.GothamBold
+    btn.Parent = parent
+    self:_round(btn, 6)
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+local function AddLabel(parent, text)
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, 0, 0, 18)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = text
+    lbl.TextColor3 = THEME.GRAY
+    lbl.TextSize = 10
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.TextWrapped = true
+    lbl.Parent = parent
+    return lbl
+end
+
+local function AddToggle(parent, labelText, default, callback)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 34)
+    row.BackgroundTransparency = 1
+    row.Parent = parent
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, -60, 1, 0)
+    lbl.Position = UDim2.new(0, 12, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = THEME.TEXT
+    lbl.TextSize = 12
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
+
+    local box = Instance.new("TextButton")
+    box.Size = UDim2.new(0, 40, 0, 24)
+    box.Position = UDim2.new(1, -48, 0.5, -12)
+    box.BackgroundColor3 = default and THEME.ACCENT or THEME.LIGHT
+    box.Text = default and "ON" or "OFF"
+    box.TextColor3 = THEME.WHITE
+    box.TextSize = 10
+    box.Font = Enum.Font.GothamBold
+    box.Parent = row
+    self:_round(box, 4)
+
+    local state = default
+    box.MouseButton1Click:Connect(function()
+        state = not state
+        box.Text = state and "ON" or "OFF"
+        box.BackgroundColor3 = state and THEME.ACCENT or THEME.LIGHT
+        if callback then callback(state) end
+    end)
+end
+
+local function AddSlider(parent, labelText, min, max, default, callback)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 50)
+    frame.BackgroundTransparency = 1
+    frame.Parent = parent
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.5, 0, 0, 20)
+    lbl.Position = UDim2.new(0, 12, 0, 4)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = THEME.TEXT
+    lbl.TextSize = 12
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = frame
+
+    local valLbl = Instance.new("TextLabel")
+    valLbl.Size = UDim2.new(0.3, 0, 0, 20)
+    valLbl.Position = UDim2.new(0.7, 0, 0, 4)
+    valLbl.BackgroundTransparency = 1
+    valLbl.Text = tostring(default)
+    valLbl.TextColor3 = THEME.ACCENT
+    valLbl.TextSize = 12
+    valLbl.Font = Enum.Font.GothamBold
+    valLbl.TextXAlignment = Enum.TextXAlignment.Right
+    valLbl.Parent = frame
+
+    local sliderBg = Instance.new("Frame")
+    sliderBg.Size = UDim2.new(1, -24, 0, 8)
+    sliderBg.Position = UDim2.new(0, 12, 0, 30)
+    sliderBg.BackgroundColor3 = THEME.DARK
+    sliderBg.BorderSizePixel = 0
+    sliderBg.Parent = frame
+    self:_round(sliderBg, 4)
+
+    local sliderFill = Instance.new("Frame")
+    sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    sliderFill.BackgroundColor3 = THEME.ACCENT
+    sliderFill.BorderSizePixel = 0
+    sliderFill.Parent = sliderBg
+    self:_round(sliderFill, 4)
+
+    local dragging = false
+    local function update(input)
+        local delta = math.clamp((input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X, 0, 1)
+        sliderFill.Size = UDim2.new(delta, 0, 1, 0)
+        local value = math.floor(min + (max - min) * delta)
+        valLbl.Text = tostring(value)
+        if callback then callback(value) end
+    end
+    
+    sliderBg.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            update(i)
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(i)
+        if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+            update(i)
+        end
+    end)
+end
+
+local function AddDropdown(parent, labelText, options, defaultIndex, callback)
+    local selectedIndex = defaultIndex or 1
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 34)
+    row.BackgroundTransparency = 1
+    row.Parent = parent
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.5, 0, 1, 0)
+    lbl.Position = UDim2.new(0, 12, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = THEME.TEXT
+    lbl.TextSize = 12
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.45, 0, 0, 24)
+    btn.Position = UDim2.new(0.52, 0, 0.5, -12)
+    btn.BackgroundColor3 = THEME.LIGHT
+    btn.Text = options[selectedIndex]
+    btn.TextColor3 = THEME.WHITE
+    btn.TextSize = 10
+    btn.Font = Enum.Font.GothamBold
+    btn.Parent = row
+    self:_round(btn, 4)
+
+    local open = false
+    local listFrame = nil
+
+    btn.MouseButton1Click:Connect(function()
+        open = not open
+        if open then
+            listFrame = Instance.new("Frame")
+            local relPos = btn.AbsolutePosition - MainWindow.AbsolutePosition
+            listFrame.Position = UDim2.new(0, relPos.X, 0, relPos.Y + btn.AbsoluteSize.Y + 2)
+            listFrame.Size = UDim2.new(0, btn.AbsoluteSize.X, 0, math.min(#options * 24 + 4, 130))
+            listFrame.BackgroundColor3 = THEME.PopupBg
+            listFrame.BorderSizePixel = 0
+            listFrame.ZIndex = 200
+            listFrame.Parent = MainWindow
+            self:_round(listFrame, 4)
+
+            local scroll = Instance.new("ScrollingFrame")
+            scroll.Size = UDim2.new(1, 0, 1, 0)
+            scroll.BackgroundTransparency = 1
+            scroll.BorderSizePixel = 0
+            scroll.ScrollBarThickness = 4
+            scroll.ScrollBarImageColor3 = THEME.Border
+            scroll.CanvasSize = UDim2.new(1, 0, 0, #options * 24)
+            scroll.ZIndex = 201
+            scroll.Parent = listFrame
+
+            for idx, opt in ipairs(options) do
+                local optBtn = Instance.new("TextButton")
+                optBtn.Size = UDim2.new(1, 0, 0, 24)
+                optBtn.BackgroundColor3 = THEME.PopupBg
+                optBtn.BorderSizePixel = 0
+                optBtn.Text = opt
+                optBtn.TextColor3 = (idx == selectedIndex) and THEME.Scheme or THEME.Text
+                optBtn.TextSize = 12
+                optBtn.Font = Enum.Font.Gotham
+                optBtn.ZIndex = 202
+                optBtn.Parent = scroll
+
+                optBtn.MouseButton1Click:Connect(function()
+                    selectedIndex = idx
+                    btn.Text = opt
+                    if callback then callback(opt) end
+                    listFrame:Destroy()
+                    open = false
+                end)
+            end
+        else
+            if listFrame then listFrame:Destroy() end
+        end
+    end)
+end
+
+local function AddColorpicker(parent, labelText, defaultColor, callback)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 20)
+    row.BackgroundTransparency = 1
+    row.Parent = parent
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.6, 0, 1, 0)
+    lbl.Position = UDim2.new(0, 0, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = THEME.Text
+    lbl.TextSize = 12
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
+
+    local preview = Instance.new("TextButton")
+    preview.Size = UDim2.new(0, 28, 0, 14)
+    preview.Position = UDim2.new(1, -28, 0.5, -7)
+    preview.BackgroundColor3 = defaultColor
+    preview.BorderSizePixel = 0
+    preview.Text = ""
+    preview.Parent = row
+    self:_round(preview, 2)
+end
+
+local function AddInput(parent, labelText, placeholder, callback)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 38)
+    row.BackgroundTransparency = 1
+    row.Parent = parent
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.35, 0, 1, 0)
+    lbl.Position = UDim2.new(0, 12, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = THEME.TEXT
+    lbl.TextSize = 11
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.Parent = row
+
+    local boxFrame = Instance.new("Frame")
+    boxFrame.Size = UDim2.new(0.4, 0, 1, 0)
+    boxFrame.Position = UDim2.new(0.37, 0, 0, 0)
+    boxFrame.BackgroundColor3 = THEME.DARK
+    boxFrame.BorderSizePixel = 0
+    boxFrame.Parent = row
+    self:_round(boxFrame, 4)
+
+    local tb = Instance.new("TextBox")
+    tb.Size = UDim2.new(1, -12, 1, 0)
+    tb.Position = UDim2.new(0, 6, 0, 0)
+    tb.BackgroundTransparency = 1
+    tb.Text = ""
+    tb.PlaceholderText = placeholder or ""
+    tb.TextColor3 = THEME.WHITE
+    tb.PlaceholderColor3 = THEME.GRAY
+    tb.TextSize = 11
+    tb.Font = Enum.Font.Gotham
+    tb.TextXAlignment = Enum.TextXAlignment.Left
+    tb.ClearTextOnFocus = false
+    tb.Parent = boxFrame
+
+    tb.FocusLost:Connect(function()
+        if callback then callback(tb.Text) end
+    end)
+end
+
+local function AddParagraph(parent, title, content)
+    local container = Instance.new("Frame")
+    container.Size = UDim2.new(1, 0, 0, 0)
+    container.AutomaticSize = Enum.AutomaticSize.Y
+    container.BackgroundTransparency = 1
+    container.Parent = parent
+    
+    if title and title ~= "" then
+        local t = Instance.new("TextLabel")
+        t.Size = UDim2.new(1, 0, 0, 18)
+        t.BackgroundTransparency = 1
+        t.Text = title
+        t.TextColor3 = THEME.ACCENT
+        t.TextSize = 13
+        t.Font = Enum.Font.GothamBold
+        t.TextXAlignment = Enum.TextXAlignment.Left
+        t.Parent = container
+    end
+    
+    if content and content ~= "" then
+        local c = Instance.new("TextLabel")
+        c.Size = UDim2.new(1, 0, 0, 0)
+        c.AutomaticSize = Enum.AutomaticSize.Y
+        c.BackgroundTransparency = 1
+        c.Text = content
+        c.TextColor3 = THEME.GRAY
+        c.TextSize = 12
+        c.Font = Enum.Font.Gotham
+        c.TextXAlignment = Enum.TextXAlignment.Left
+        c.TextWrapped = true
+        c.Parent = container
+    end
+end
+
 function UI:CreateTab(name, icon)
-    -- Create tab button
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0, 90, 1, 0)
     btn.BackgroundColor3 = (#self.Tabs == 0) and self.Theme.ACCENT or self.Theme.MID
@@ -792,7 +1123,6 @@ function UI:CreateTab(name, icon)
     btn.Parent = self.NavScroll
     self:_round(btn, 4)
     
-    -- Store tab data
     local tabData = {
         Name = name,
         Button = btn,
@@ -800,26 +1130,22 @@ function UI:CreateTab(name, icon)
     }
     table.insert(self.Tabs, tabData)
     
-    -- Create tab content area (stored for later use)
-    -- We'll use a separate frame for each tab's content
     local tabContent = Instance.new("Frame")
     tabContent.Size = UDim2.new(1, 0, 1, 0)
     tabContent.BackgroundTransparency = 1
     tabContent.Visible = (#self.Tabs == 1)
     tabContent.Parent = self.ContentArea
     
-    -- Store reference
     tabData.Content = tabContent
-    tabData._elements = {}
     
-    -- Tab switch function
     local function switchTab()
         for _, t in ipairs(self.Tabs) do
             t.Button.BackgroundColor3 = self.Theme.MID
             if t.Content then
                 t.Content.Visible = false
             end
-        end        btn.BackgroundColor3 = self.Theme.ACCENT
+        end
+        btn.BackgroundColor3 = self.Theme.ACCENT
         if tabContent then
             tabContent.Visible = true
         end
@@ -827,25 +1153,16 @@ function UI:CreateTab(name, icon)
     
     btn.MouseButton1Click:Connect(switchTab)
     
-    -- Return methods for adding elements to this tab
     local tabMethods = {}
     
     function tabMethods:CreateSection(name)
-        -- Create a section inside this tab's content
-        local section = {}
-        
-        -- We'll use the UI methods but target the tab's content
         local originalContent = self.ContentArea
-        
-        -- Temporarily switch content area to tab's content
         self.ContentArea = tabContent
         
-        -- Create section title if name provided
         if name and name ~= "" then
             self:CreateSectionTitle(name)
         end
         
-        -- Store section elements container
         local sectionContainer = Instance.new("Frame")
         sectionContainer.Size = UDim2.new(1, 0, 0, 0)
         sectionContainer.AutomaticSize = Enum.AutomaticSize.Y
@@ -856,12 +1173,10 @@ function UI:CreateTab(name, icon)
         layout.SortOrder = Enum.SortOrder.LayoutOrder
         layout.Padding = UDim.new(0, 6)
         
-        -- Return methods for this section
         local sectionMethods = {}
         
         function sectionMethods:CreateToggle(cfg)
             cfg = cfg or {}
-            -- Temporarily set content to section container
             local oldContent = self.ContentArea
             self.ContentArea = sectionContainer
             local result = self:CreateToggle(cfg)
@@ -913,6 +1228,14 @@ function UI:CreateTab(name, icon)
             return result
         end
         
+        function sectionMethods:CreateInfoLabel(text)
+            local oldContent = self.ContentArea
+            self.ContentArea = sectionContainer
+            local result = self:CreateInfoLabel(text)
+            self.ContentArea = oldContent
+            return result
+        end
+        
         function sectionMethods:CreateParagraph(cfg)
             cfg = cfg or {}
             local oldContent = self.ContentArea
@@ -922,11 +1245,27 @@ function UI:CreateTab(name, icon)
             return result
         end
         
+        function sectionMethods:CreateColorPicker(cfg)
+            cfg = cfg or {}
+            local oldContent = self.ContentArea
+            self.ContentArea = sectionContainer
+            local result = self:CreateColorPicker(cfg)
+            self.ContentArea = oldContent
+            return result
+        end
+        
         return sectionMethods
     end
     
-    -- Add direct methods for simple elements (no section)
     function tabMethods:CreateLabel(text)
+        local oldContent = self.ContentArea
+        self.ContentArea = tabContent
+        local result = self:CreateInfoLabel(text)
+        self.ContentArea = oldContent
+        return result
+    end
+    
+    function tabMethods:CreateInfoLabel(text)
         local oldContent = self.ContentArea
         self.ContentArea = tabContent
         local result = self:CreateInfoLabel(text)
@@ -948,6 +1287,51 @@ function UI:CreateTab(name, icon)
         local oldContent = self.ContentArea
         self.ContentArea = tabContent
         local result = self:CreateToggle(cfg)
+        self.ContentArea = oldContent
+        return result
+    end
+    
+    function tabMethods:CreateSlider(cfg)
+        cfg = cfg or {}
+        local oldContent = self.ContentArea
+        self.ContentArea = tabContent
+        local result = self:CreateSlider(cfg)
+        self.ContentArea = oldContent
+        return result
+    end
+    
+    function tabMethods:CreateDropdown(cfg)
+        cfg = cfg or {}
+        local oldContent = self.ContentArea
+        self.ContentArea = tabContent
+        local result = self:CreateDropdown(cfg)
+        self.ContentArea = oldContent
+        return result
+    end
+    
+    function tabMethods:CreateInput(cfg)
+        cfg = cfg or {}
+        local oldContent = self.ContentArea
+        self.ContentArea = tabContent
+        local result = self:CreateInput(cfg)
+        self.ContentArea = oldContent
+        return result
+    end
+    
+    function tabMethods:CreateParagraph(cfg)
+        cfg = cfg or {}
+        local oldContent = self.ContentArea
+        self.ContentArea = tabContent
+        local result = self:CreateParagraph(cfg)
+        self.ContentArea = oldContent
+        return result
+    end
+    
+    function tabMethods:CreateColorPicker(cfg)
+        cfg = cfg or {}
+        local oldContent = self.ContentArea
+        self.ContentArea = tabContent
+        local result = self:CreateColorPicker(cfg)
         self.ContentArea = oldContent
         return result
     end
@@ -1002,11 +1386,7 @@ end
 
 function UI:Notify(data)
     data = data or {}
-    local title = data.Title or "Notification"
-    local content = data.Content or ""
-    local duration = data.Duration or 5
-    
-    print("🔔 " .. title .. ": " .. content)
+    print("🔔 " .. (data.Title or "Notification") .. ": " .. (data.Content or ""))
 end
 
 function UI:ApplyFlags(flags)
