@@ -1,4 +1,4 @@
--- for test only
+-- PreviewLibary - Left Sidebar Navigation with Mobile Scroll Support
 
 local Release = "Release 1"
 
@@ -8,15 +8,11 @@ local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local Lighting = game:GetService("Lighting")
-local SoundService = game:GetService("SoundService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
--- ============================================================
---  COLORS & THEME
--- ============================================================
 local THEME = {
 	Scheme = Color3.fromRGB(0, 210, 230),
 	Text = Color3.fromRGB(220, 235, 240),
@@ -40,45 +36,49 @@ local THEME = {
 	WHITE = Color3.fromRGB(255, 255, 255),
 }
 
--- ============================================================
---  CREATE UI
--- ============================================================
+local Colors = THEME
+
 local SettingsGui = Instance.new("ScreenGui")
 SettingsGui.Name = "PreviewLibaryUI"
 SettingsGui.ResetOnSpawn = false
 SettingsGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 SettingsGui.Parent = playerGui
 
--- Sizes
 local UI_WIDTH = isMobile and 550 or 650
-local UI_HEIGHT = isMobile and 400 or 500
+local UI_HEIGHT = isMobile and 400 or 480
 local NAV_WIDTH = 50
 local NAV_EXPANDED = 160
 
--- Main Window
 local MainWindow = Instance.new("Frame")
 MainWindow.Name = "MainWindow"
 MainWindow.Size = UDim2.new(0, UI_WIDTH, 0, UI_HEIGHT)
 MainWindow.Position = UDim2.new(0.5, -UI_WIDTH / 2, 0.5, -UI_HEIGHT / 2)
 MainWindow.BackgroundColor3 = THEME.WindowBg
+MainWindow.BackgroundTransparency = 0.4
 MainWindow.BorderSizePixel = 0
 MainWindow.Active = true
 MainWindow.ZIndex = 1
 MainWindow.Parent = SettingsGui
 Instance.new("UICorner", MainWindow).CornerRadius = UDim.new(0, 6)
 
--- NoDrag system
 local noDrag = {}
 local function markNoDrag(gui) noDrag[gui] = true end
 
--- ============================================================
---  DRAGGING
--- ============================================================
+local Header = Instance.new("Frame")
+Header.Name = "Header"
+Header.Size = UDim2.new(1, 0, 0, 50)
+Header.BackgroundColor3 = THEME.DARK
+Header.BackgroundTransparency = 0.4
+Header.BorderSizePixel = 0
+Header.ZIndex = 10
+Header.Parent = MainWindow
+Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 6)
+
 local dragging = false
 local dragStart = nil
 local startPos = nil
 
-MainWindow.InputBegan:Connect(function(input)
+Header.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 		local objs = playerGui:GetGuiObjectsAtPosition(input.Position.X, input.Position.Y)
 		for _, obj in ipairs(objs) do
@@ -112,20 +112,6 @@ UserInputService.InputChanged:Connect(function(input)
 	end
 end)
 
--- ============================================================
---  HEADER
--- ============================================================
-local Header = Instance.new("Frame")
-Header.Name = "Header"
-Header.Size = UDim2.new(1, 0, 0, 50)
-Header.BackgroundColor3 = THEME.DARK
-Header.BorderSizePixel = 0
-Header.ZIndex = 10
-Header.Parent = MainWindow
-Instance.new("UICorner", Header).CornerRadius = UDim.new(0, 6)
-markNoDrag(Header)
-
--- Logo
 local Logo = Instance.new("ImageLabel")
 Logo.Size = UDim2.new(0, 35, 0, 35)
 Logo.Position = UDim2.new(0, 12, 0.5, -17.5)
@@ -133,8 +119,8 @@ Logo.BackgroundTransparency = 1
 Logo.Image = "rbxassetid://109578957492871"
 Logo.ZIndex = 11
 Logo.Parent = Header
+markNoDrag(Logo)
 
--- Title
 local TitleLbl = Instance.new("TextLabel")
 TitleLbl.Size = UDim2.new(0, 200, 0, 25)
 TitleLbl.Position = UDim2.new(0, 55, 0, 8)
@@ -146,6 +132,7 @@ TitleLbl.Font = Enum.Font.Fantasy
 TitleLbl.TextXAlignment = Enum.TextXAlignment.Left
 TitleLbl.ZIndex = 11
 TitleLbl.Parent = Header
+markNoDrag(TitleLbl)
 
 local SubLbl = Instance.new("TextLabel")
 SubLbl.Size = UDim2.new(0, 180, 0, 12)
@@ -158,8 +145,8 @@ SubLbl.Font = Enum.Font.Gotham
 SubLbl.TextXAlignment = Enum.TextXAlignment.Left
 SubLbl.ZIndex = 11
 SubLbl.Parent = Header
+markNoDrag(SubLbl)
 
--- Close Button
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Position = UDim2.new(1, -40, 0.5, -15)
@@ -173,8 +160,11 @@ CloseBtn.Parent = Header
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 4)
 markNoDrag(CloseBtn)
 
+CloseBtn.MouseButton1Click:Connect(function()
+	MainWindow.Visible = false
+	OpenButton.Visible = true
+end)
 
--- Open Button
 local OpenButton = Instance.new("ImageButton")
 OpenButton.Size = UDim2.new(0, 50, 0, 50)
 OpenButton.Position = UDim2.new(0.02, 0, 0.15, 0)
@@ -193,7 +183,6 @@ OpenButton.MouseButton1Click:Connect(function()
 	OpenButton.Visible = false
 end)
 
--- Make Open Button draggable
 local openDrag = false
 local openDragStart = nil
 local openStartPos = nil
@@ -223,13 +212,6 @@ UserInputService.InputChanged:Connect(function(input)
 		)
 	end
 end)
-
-
-CloseBtn.MouseButton1Click:Connect(function()
-	MainWindow.Visible = false
-	OpenButton.Visible = true
-end)
-
 
 local Sidebar = Instance.new("Frame")
 Sidebar.Name = "Sidebar"
@@ -265,7 +247,6 @@ SidebarList.SortOrder = Enum.SortOrder.LayoutOrder
 SidebarList.Padding = UDim.new(0, 4)
 SidebarList.Parent = SidebarScroll
 
--- Tab Indicator
 local TabIndicator = Instance.new("Frame")
 TabIndicator.Size = UDim2.new(0, 2, 0, 24)
 TabIndicator.Position = UDim2.new(1, -2, 0, 0)
@@ -276,7 +257,7 @@ TabIndicator.ZIndex = 12
 TabIndicator.Parent = Sidebar
 Instance.new("UICorner", TabIndicator).CornerRadius = UDim.new(0, 2)
 
-local ContentArea = Instance.new("Frame")  -- Changed from CanvasGroup to Frame
+local ContentArea = Instance.new("Frame")
 ContentArea.Name = "ContentArea"
 ContentArea.Size = UDim2.new(1, -(NAV_WIDTH + 10), 1, -50)
 ContentArea.Position = UDim2.new(0, NAV_WIDTH + 5, 0, 50)
@@ -285,9 +266,7 @@ ContentArea.BorderSizePixel = 0
 ContentArea.ZIndex = 2
 ContentArea.Parent = MainWindow
 
--- Main Content ScrollingFrame (FIXED)
 local ContentScroll = Instance.new("ScrollingFrame")
-ContentScroll.Name = "ContentScroll"
 ContentScroll.Size = UDim2.new(1, 0, 1, 0)
 ContentScroll.Position = UDim2.new(0, 0, 0, 0)
 ContentScroll.BackgroundTransparency = 1
@@ -300,13 +279,11 @@ ContentScroll.ScrollingDirection = Enum.ScrollingDirection.Y
 ContentScroll.ZIndex = 3
 ContentScroll.Parent = ContentArea
 
--- Content Layout
 local ContentLayout = Instance.new("UIListLayout")
 ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ContentLayout.Padding = UDim.new(0, 6)
 ContentLayout.Parent = ContentScroll
 
--- Content Padding
 local ContentPad = Instance.new("UIPadding")
 ContentPad.PaddingTop = UDim.new(0, 8)
 ContentPad.PaddingLeft = UDim.new(0, 8)
@@ -340,7 +317,6 @@ local currentIndicatorY = 0
 
 local function switchTab(id)
 	if activeTabId == id then return end
-
 	for tabId, tabData in pairs(tabs) do
 		if tabId == id then
 			tabData.Icon.ImageColor3 = THEME.Text
@@ -363,13 +339,10 @@ RunService.RenderStepped:Connect(function()
 	local tW = navbarCollapsed and NAV_WIDTH or NAV_EXPANDED
 	currentNavbarWidth = currentNavbarWidth + (tW - currentNavbarWidth) * 0.15
 	Sidebar.Size = UDim2.new(0, currentNavbarWidth, 1, -50)
-
 	currentIndicatorY = currentIndicatorY + (targetIndicatorY - currentIndicatorY) * 0.15
 	TabIndicator.Position = UDim2.new(1, -2, 0, currentIndicatorY)
-
 	local tR = navbarCollapsed and 0 or 180
 	CollapseBtn.Rotation = CollapseBtn.Rotation + (tR - CollapseBtn.Rotation) * 0.15
-
 	local contentAlpha = math.clamp((currentNavbarWidth - NAV_WIDTH) / 100, 0, 1)
 	for _, tabData in pairs(tabs) do
 		tabData.Text.TextTransparency = 1 - contentAlpha
@@ -413,101 +386,37 @@ local function AddTab(id, name, icon)
 	container.Visible = false
 	container.Parent = ContentScroll
 
-	-- Title inside tab
-	local title = Instance.new("TextLabel")
-	title.Size = UDim2.new(1, -20, 0, 30)
-	title.Position = UDim2.new(0, 10, 0, 0)
-	title.BackgroundTransparency = 1
-	title.Text = name
-	title.TextColor3 = THEME.Text
-	title.TextSize = 18
-	title.Font = Enum.Font.Fantasy
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.Parent = container
-
 	tabs[id] = { Button = btn, Icon = ic, Text = lbl, Container = container }
-
 	markNoDrag(btn)
 	btn.MouseButton1Click:Connect(function()
 		if not navbarCollapsed then navbarCollapsed = true end
 		switchTab(id)
 	end)
-
 	return container
 end
 
-	local function AddSectionTitle(parent, text)
-		local f = Instance.new("Frame")
-		f.Size = UDim2.new(1, 0, 0, 40)
-		f.BackgroundTransparency = 1
-		f.Parent = parent
-
-		local h = Instance.new("TextLabel")
-		h.Size = UDim2.new(1, 0, 0, 22)
-		h.Position = UDim2.new(0, 0, 0, 15)
-		h.BackgroundTransparency = 1
-		h.Text = text
-		h.TextColor3 = THEME.WHITE
-		h.TextSize = 18
-		h.Font = Enum.Font.Fantasy
-		h.TextXAlignment = Enum.TextXAlignment.Left
-		h.Parent = f
-
-		local l = Instance.new("Frame")
-		l.Size = UDim2.new(0, 50, 0, 2)
-		l.Position = UDim2.new(0, 0, 0, 38)
-		l.BackgroundColor3 = THEME.ACCENT
-		l.BorderSizePixel = 0
-		l.Parent = f
-
-		return f
-	end
-
--- Info Label
-local function AddInfoLabel(parent, text)
-	local lbl = Instance.new("TextLabel")
-	lbl.Size = UDim2.new(1, 0, 0, 18)
-	lbl.BackgroundTransparency = 1
-	lbl.Text = text
-	lbl.TextColor3 = THEME.GRAY
-	lbl.TextSize = 10
-	lbl.Font = Enum.Font.Gotham
-	lbl.TextXAlignment = Enum.TextXAlignment.Left
-	lbl.TextWrapped = true
-	lbl.Parent = parent
-	return lbl
-end
-
--- ============================================================
---  MOBILE FLY CONTROLS
--- ============================================================
-
--- Mobile Fly GUI
 local mobileFlyGui = nil
 local mobileFlyControls = nil
 local isFlyEnabled = false
 
--- Function to create mobile fly controls
 local function createMobileFlyControls()
 	if mobileFlyGui then 
 		mobileFlyGui:Destroy() 
 		mobileFlyGui = nil
 		mobileFlyControls = nil
 	end
-
 	mobileFlyGui = Instance.new("ScreenGui")
 	mobileFlyGui.Name = "MobileFly"
 	mobileFlyGui.ResetOnSpawn = false
 	mobileFlyGui.Parent = playerGui
 	mobileFlyGui.Enabled = false
 
-	-- UP button
 	local upBtn = Instance.new("TextButton")
 	upBtn.Size = UDim2.new(0, 65, 0, 65)
 	upBtn.Position = UDim2.new(1, -90, 0.5, -80)
-	upBtn.BackgroundColor3 = THEME.ACCENT_DARK or Color3.fromRGB(0, 150, 170)
+	upBtn.BackgroundColor3 = THEME.ACCENT_DARK
 	upBtn.Text = "▲ UP"
-	upBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	upBtn.TextColor3 = THEME.WHITE
 	upBtn.TextSize = 15
 	upBtn.Font = Enum.Font.GothamBold
 	upBtn.BorderSizePixel = 0
@@ -515,13 +424,12 @@ local function createMobileFlyControls()
 	Instance.new("UICorner", upBtn).CornerRadius = UDim.new(0, 10)
 	markNoDrag(upBtn)
 
-	-- DOWN button
 	local downBtn = Instance.new("TextButton")
 	downBtn.Size = UDim2.new(0, 65, 0, 65)
 	downBtn.Position = UDim2.new(1, -90, 0.5, 15)
-	downBtn.BackgroundColor3 = THEME.MID or Color3.fromRGB(20, 40, 48)
+	downBtn.BackgroundColor3 = THEME.MID
 	downBtn.Text = "▼ DN"
-	downBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	downBtn.TextColor3 = THEME.WHITE
 	downBtn.TextSize = 15
 	downBtn.Font = Enum.Font.GothamBold
 	downBtn.BorderSizePixel = 0
@@ -529,36 +437,23 @@ local function createMobileFlyControls()
 	Instance.new("UICorner", downBtn).CornerRadius = UDim.new(0, 10)
 	markNoDrag(downBtn)
 
-	-- Fly state
 	local flyUp, flyDown = false, false
-
 	upBtn.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.Touch then 
-			flyUp = true 
-		end
+		if i.UserInputType == Enum.UserInputType.Touch then flyUp = true end
 	end)
-	upBtn.InputEnded:Connect(function() 
-		flyUp = false 
-	end)
-
+	upBtn.InputEnded:Connect(function() flyUp = false end)
 	downBtn.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.Touch then 
-			flyDown = true 
-		end
+		if i.UserInputType == Enum.UserInputType.Touch then flyDown = true end
 	end)
-	downBtn.InputEnded:Connect(function() 
-		flyDown = false 
-	end)
+	downBtn.InputEnded:Connect(function() flyDown = false end)
 
 	mobileFlyControls = {
 		isFlyUp = function() return flyUp end,
 		isFlyDown = function() return flyDown end,
 	}
-
 	return mobileFlyControls
 end
 
--- Function to toggle mobile fly visibility
 local function toggleMobileFly(enable)
 	isFlyEnabled = enable
 	if enable then
@@ -579,7 +474,6 @@ local function toggleMobileFly(enable)
 	end
 end
 
--- Clean up mobile fly when character dies/respawns
 local function cleanupMobileFly()
 	if mobileFlyGui then
 		mobileFlyGui:Destroy()
@@ -589,17 +483,52 @@ local function cleanupMobileFly()
 	end
 end
 
--- Listen for character death to cleanup fly
 player.CharacterAdded:Connect(function()
 	cleanupMobileFly()
-	-- If fly was enabled, recreate it after respawn
 	if isFlyEnabled then
 		task.wait(0.5)
 		toggleMobileFly(true)
 	end
 end)
 
--- Toggle
+local function AddSectionTitle(parent, text)
+	local f = Instance.new("Frame")
+	f.Size = UDim2.new(1, 0, 0, 40)
+	f.BackgroundTransparency = 1
+	f.Parent = parent
+	local h = Instance.new("TextLabel")
+	h.Size = UDim2.new(1, 0, 0, 22)
+	h.Position = UDim2.new(0, 0, 0, 15)
+	h.BackgroundTransparency = 1
+	h.Text = text
+	h.TextColor3 = THEME.WHITE
+	h.TextSize = 18
+	h.Font = Enum.Font.Fantasy
+	h.TextXAlignment = Enum.TextXAlignment.Left
+	h.Parent = f
+	local l = Instance.new("Frame")
+	l.Size = UDim2.new(0, 50, 0, 2)
+	l.Position = UDim2.new(0, 0, 0, 38)
+	l.BackgroundColor3 = THEME.ACCENT
+	l.BorderSizePixel = 0
+	l.Parent = f
+	return f
+end
+
+local function AddInfoLabel(parent, text)
+	local lbl = Instance.new("TextLabel")
+	lbl.Size = UDim2.new(1, 0, 0, 18)
+	lbl.BackgroundTransparency = 1
+	lbl.Text = text
+	lbl.TextColor3 = THEME.GRAY
+	lbl.TextSize = 10
+	lbl.Font = Enum.Font.Gotham
+	lbl.TextXAlignment = Enum.TextXAlignment.Left
+	lbl.TextWrapped = true
+	lbl.Parent = parent
+	return lbl
+end
+
 local function AddToggle(parent, labelText, default, callback)
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1, 0, 0, 34)
@@ -638,11 +567,9 @@ local function AddToggle(parent, labelText, default, callback)
 		btn.BackgroundColor3 = state and THEME.ACCENT or THEME.LIGHT
 		if callback then callback(state) end
 	end)
-
 	return container
 end
 
--- Slider
 local function AddSlider(parent, labelText, min, max, default, callback)
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1, 0, 0, 50)
@@ -720,11 +647,9 @@ local function AddSlider(parent, labelText, min, max, default, callback)
 			dragging = false
 		end
 	end)
-
 	return container
 end
 
--- Dropdown
 local function AddDropdown(parent, labelText, options, defaultOption, callback)
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1, 0, 0, 34)
@@ -768,11 +693,9 @@ local function AddDropdown(parent, labelText, options, defaultOption, callback)
 		btn.Text = selected
 		if callback then callback(selected) end
 	end)
-
 	return container
 end
 
--- Button
 local function AddButton(parent, text, callback)
 	local btn = Instance.new("TextButton")
 	btn.Size = UDim2.new(1, 0, 0, 34)
@@ -787,7 +710,6 @@ local function AddButton(parent, text, callback)
 	return btn
 end
 
--- Text Input
 local function AddTextInput(parent, labelText, placeholder, callback)
 	local container = Instance.new("Frame")
 	container.Size = UDim2.new(1, 0, 0, 38)
@@ -838,7 +760,6 @@ local function AddTextInput(parent, labelText, placeholder, callback)
 	return container, tb
 end
 
--- Color Picker
 local function AddColorpicker(parent, labelText, defaultColor, callback)
 	local row = Instance.new("Frame")
 	row.Size = UDim2.new(1, 0, 0, 30)
@@ -926,16 +847,15 @@ local function AddColorpicker(parent, labelText, defaultColor, callback)
 			end
 		end)
 	end)
-
 	return {}
 end
 
 local function makeSection(parent, name)
 	local hasHeader = name ~= nil and name ~= ""
-	local headerH = hasHeader and 35 or 6
+	local headerH = hasHeader and 28 or 4
 
 	local box = Instance.new("Frame")
-	box.Size = UDim2.new(1, 0, 0, headerH + 20)
+	box.Size = UDim2.new(1, 0, 0, headerH + 14)
 	box.BackgroundColor3 = THEME.Border
 	box.BorderSizePixel = 0
 	box.Parent = parent
@@ -951,7 +871,7 @@ local function makeSection(parent, name)
 
 	if hasHeader then
 		local hdr = Instance.new("TextLabel")
-		hdr.Size = UDim2.new(1, -30, 0, 35)
+		hdr.Size = UDim2.new(1, -30, 0, 28)
 		hdr.Position = UDim2.new(0, 15, 0, 0)
 		hdr.BackgroundTransparency = 1
 		hdr.Text = name
@@ -965,51 +885,37 @@ local function makeSection(parent, name)
 	local inner = Instance.new("Frame")
 	inner.Name = "Inner"
 	inner.Size = UDim2.new(1, -30, 0, 0)
-	inner.Position = UDim2.new(0, 15, 0, headerH + 5)
+	inner.Position = UDim2.new(0, 15, 0, headerH + 4)
 	inner.BackgroundTransparency = 1
 	inner.Parent = bg
 
 	local il = Instance.new("UIListLayout", inner)
 	il.SortOrder = Enum.SortOrder.LayoutOrder
-	il.Padding = UDim.new(0, 8)
+	il.Padding = UDim.new(0, 6)
 
 	local function resize()
 		local h = il.AbsoluteContentSize.Y
 		if h > 0 then
 			inner.Size = UDim2.new(1, -30, 0, h)
-			box.Size = UDim2.new(1, 0, 0, headerH + 5 + h + 15)
+			box.Size = UDim2.new(1, 0, 0, headerH + 4 + h + 12)
 		else
 			inner.Size = UDim2.new(1, -30, 0, 4)
-			box.Size = UDim2.new(1, 0, 0, headerH + 10 + 15)
+			box.Size = UDim2.new(1, 0, 0, headerH + 8 + 12)
 		end
 	end
-
+	
 	il:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(resize)
-
-	-- Also resize when children are added/removed
-	inner.ChildAdded:Connect(function() 
-		task.wait() 
-		resize() 
-	end)
-	inner.ChildRemoved:Connect(function() 
-		task.wait() 
-		resize() 
-	end)
-
+	inner.ChildAdded:Connect(function() task.wait(); resize() end)
+	inner.ChildRemoved:Connect(function() task.wait(); resize() end)
 	task.wait(0.05)
 	resize()
-
 	return inner
 end
 
--- ============================================================
---  PREVIEWLIBARY API
--- ============================================================
 local PreviewLibary = {}
 PreviewLibary.Flags = {}
 PreviewLibary.Options = PreviewLibary.Flags
 PreviewLibary.isMobile = isMobile
-PreviewLibary._tabSections = {}
 
 local ElementMethods = {}
 
@@ -1107,7 +1013,6 @@ function ElementMethods:CreateParagraph(cfg)
 	return {}
 end
 
--- Tab Methods
 local TabMethods = {}
 
 function TabMethods:CreateSection(name)
@@ -1115,7 +1020,6 @@ function TabMethods:CreateSection(name)
 	return setmetatable({ Inner = inner, _tab = self }, { __index = ElementMethods })
 end
 
--- Window Methods
 local WindowMethods = {}
 
 function WindowMethods:CreateTab(name, icon)
@@ -1129,7 +1033,6 @@ function WindowMethods:CreateTab(name, icon)
 	content.BackgroundTransparency = 1
 	content.Parent = container
 
-	-- Create a container for sections inside this tab
 	local inner = makeSection(content, nil)
 
 	local tab = setmetatable({
@@ -1149,7 +1052,6 @@ function PreviewLibary:CreateWindow(settings)
 	return setmetatable({}, { __index = WindowMethods })
 end
 
--- SaveManager compatibility
 function PreviewLibary:ApplyFlags(flags)
 	if not flags then return end
 	for key, value in pairs(flags) do
@@ -1164,7 +1066,6 @@ function PreviewLibary:Notify(data)
 	print("🔔 " .. (data.Title or "Notification") .. ": " .. (data.Content or ""))
 end
 
--- Keybind to toggle window (LeftAlt)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then return end
 	if input.KeyCode == Enum.KeyCode.LeftAlt then
