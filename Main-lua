@@ -12,9 +12,6 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
 
--- ============================================================
---  ICONS
--- ============================================================
 local ICONS_RAW = nil
 pcall(function() ICONS_RAW = loadstring(readfile("Icons.lua"))() end)
 if not ICONS_RAW then pcall(function() ICONS_RAW = loadstring(readfile("MyRobloxGame/Icons.lua"))() end) end
@@ -32,9 +29,7 @@ local ICONS = {
 	collapse = iconId("chevron-right", "rbxassetid://92473583511724"),
 }
 
--- ============================================================
---  THEME
--- ============================================================
+
 local THEME = {
 	Scheme = Color3.fromRGB(209, 235, 103),
 	Text = Color3.fromRGB(255, 255, 255),
@@ -49,9 +44,6 @@ local THEME = {
 	MID = Color3.fromRGB(20, 40, 48)
 }
 
--- ============================================================
---  FONT
--- ============================================================
 local CustomFontAsset = nil
 pcall(function()
 	if isfile and writefile and getcustomasset and game.HttpGet then
@@ -91,9 +83,6 @@ local function ApplyFont(element, role)
 	end)
 end
 
--- ============================================================
---  HSV UTILITIES
--- ============================================================
 local function hsvToRgb(h, s, v)
 	if s == 0 then return Color3.new(v, v, v) end
 	local i = math.floor(h * 6)
@@ -127,9 +116,7 @@ local function rgbToHsv(c)
 	return h, s, v
 end
 
--- ============================================================
---  CREATE UI (MOBILE OPTIMIZED - FIXED)
--- ============================================================
+
 local SettingsGui = Instance.new("ScreenGui")
 SettingsGui.Name = "RobloxianSettings"
 SettingsGui.ResetOnSpawn = false
@@ -198,9 +185,6 @@ UserInputService.InputChanged:Connect(function(input)
 	end
 end)
 
--- ============================================================
---  CLOSE & OPEN BUTTONS
--- ============================================================
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 24, 0, 24)
 closeBtn.Position = UDim2.new(1, -32, 0, 6)
@@ -219,12 +203,52 @@ openButton.Size = UDim2.new(0, 40, 0, 40)
 openButton.Position = UDim2.new(0.02, 0, 0.02, 0)
 openButton.BackgroundColor3 = THEME.ChildBg
 openButton.BorderSizePixel = 0
-openButton.Image = ICONS.misc
+openButton.Image = "rbxassetid://109578957492871"
 openButton.BackgroundTransparency = 0.2
 openButton.Visible = false
 openButton.Parent = SettingsGui
-Instance.new("UICorner", openButton).CornerRadius = UDim.new(1, 0)
+Instance.new("UICorner", openButton).CornerRadius = UDim.new(0, 8)
 markNoDrag(openButton)
+
+local openDrag = false
+local openDragStart = nil
+local openStartPos = nil
+
+openButton.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		openDrag = true
+		openDragStart = input.Position
+		openStartPos = openButton.Position
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		openDrag = false
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if openDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - openDragStart
+		openButton.Position = UDim2.new(
+			openStartPos.X.Scale,
+			openStartPos.X.Offset + delta.X,
+			openStartPos.Y.Scale,
+			openStartPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+openButton.MouseButton1Click:Connect(function()
+	isOpen = true
+	MainWindow.Visible = true
+	openButton.Visible = false
+	if floatingBar then
+		floatingBar:Destroy()
+		floatingBar = nil
+	end
+end)
 
 local minimizeBtn = Instance.new("TextButton")
 minimizeBtn.Size = UDim2.new(0, 24, 0, 24)
@@ -246,9 +270,7 @@ closeBtn.MouseButton1Click:Connect(function()
 	openButton.Visible = true
 end)
 
--- ============================================================
---  MINIMIZE FUNCTIONALITY (—) with Floating Bar
--- ============================================================
+
 local floatingBar = nil
 
 minimizeBtn.MouseButton1Click:Connect(function()
@@ -359,9 +381,6 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	end
 end)
 
--- ============================================================
---  CONTENT AREA (FIXED - more padding)
--- ============================================================
 local ContentArea = Instance.new("CanvasGroup")
 ContentArea.Name = "ContentArea"
 ContentArea.Size = UDim2.new(1, -(NAV_WIDTH + 10), 1, -30)
@@ -381,9 +400,7 @@ BlockInputFrame.ZIndex = 100
 BlockInputFrame.Parent = ContentArea
 markNoDrag(BlockInputFrame)
 
--- ============================================================
---  NAVBAR (FIXED - with scrolling tabs)
--- ============================================================
+
 local Navbar = Instance.new("Frame")
 Navbar.Name = "Navbar"
 Navbar.Size = UDim2.new(0, NAV_WIDTH, 1, 0)
@@ -420,9 +437,6 @@ NavbarBorder.BorderSizePixel = 0
 NavbarBorder.ZIndex = 11
 NavbarBorder.Parent = Navbar
 
--- ============================================================
---  COLLAPSE BUTTON (FIXED - below tabs)
--- ============================================================
 local CollapseButton = Instance.new("ImageButton")
 CollapseButton.Size = UDim2.new(0, 17, 0, 17)
 CollapseButton.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -457,9 +471,6 @@ local targetIndicatorY = 87
 local tabs = {}
 local activeTabId = nil
 
--- ============================================================
---  SWITCH TAB (FIXED - calculates Y properly)
--- ============================================================
 local function switchTab(id)
 	if activeTabId == id then return end
 	for tabId, tabData in pairs(tabs) do
@@ -489,9 +500,6 @@ local function switchTab(id)
 	activeTabId = id
 end
 
--- ============================================================
---  RENDER LOOP (FIXED)
--- ============================================================
 RunService.RenderStepped:Connect(function()
 	local tW = navbarCollapsed and NAV_WIDTH or NAV_EXPANDED
 	currentNavbarWidth = currentNavbarWidth + (tW - currentNavbarWidth) * 0.15
@@ -511,9 +519,6 @@ end)
 
 CollapseButton.MouseButton1Click:Connect(function() navbarCollapsed = not navbarCollapsed end)
 
--- ============================================================
---  ADD TAB (FIXED - uses NavScroll)
--- ============================================================
 local function AddTab(id, name, icon)
 	local btn = Instance.new("TextButton")
 	btn.Name = name .. "Tab"
@@ -574,9 +579,6 @@ local function AddTab(id, name, icon)
 	return container
 end
 
--- ============================================================
---  SUBTAB SYSTEM
--- ============================================================
 local function CreateSubtabSystem(tabContainer, subtabNames)
 	local header = Instance.new("Frame")
 	header.Size = UDim2.new(1, 0, 0, isMobile and 30 or 40)
@@ -672,9 +674,6 @@ local function CreateSubtabSystem(tabContainer, subtabNames)
 	return subtabs
 end
 
--- ============================================================
---  CREATE CHILD BOX (Mobile optimized)
--- ============================================================
 local function CreateChildBox(column, name, height)
 	local box = Instance.new("Frame")
 	box.Size = UDim2.new(1, 0, 0, height or (isMobile and 140 or 180))
@@ -713,9 +712,6 @@ local function CreateChildBox(column, name, height)
 	return inner
 end
 
--- ============================================================
---  UI ELEMENTS (Mobile optimized)
--- ============================================================
 local function AddToggle(parent, labelText, default, callback)
 	local isSoon = labelText == "SOON"
 	local row = Instance.new("Frame")
@@ -779,9 +775,6 @@ local function AddToggle(parent, labelText, default, callback)
 	end
 end
 
--- ============================================================
---  SLIDER (MOBILE FIXED - Touch friendly)
--- ============================================================
 local function AddSlider(parent, labelText, min, max, default, callback)
 	local isSoon = labelText == "SOON"
 	local frame = Instance.new("Frame")
@@ -1018,9 +1011,6 @@ local function AddDropdown(parent, labelText, options, defaultIndex, callback)
     return btn
 end
 
--- ============================================================
---  COLOR PICKER (Mobile optimized)
--- ============================================================
 local function AddColorpicker(parent, labelText, defaultColor, callback)
 	local row = Instance.new("Frame")
 	row.Size = UDim2.new(1, 0, 0, isMobile and 18 or 20)
@@ -1202,9 +1192,6 @@ local function AddColorpicker(parent, labelText, defaultColor, callback)
 	end)
 end
 
--- ============================================================
---  BUTTON, LABEL, PARAGRAPH, INPUT (Mobile optimized)
--- ============================================================
 local function AddButton(parent, text, callback)
 	local isSoon = text == "SOON"
 	local btn = Instance.new("TextButton")
@@ -1319,9 +1306,6 @@ local function AddInput(parent, labelText, placeholder, callback)
 	end)
 end
 
--- ============================================================
---  RESOLVE ICON
--- ============================================================
 local function resolveIcon(icon)
 	if type(icon) == "number" then return "rbxassetid://" .. icon end
 	if type(icon) == "string" then
@@ -1332,9 +1316,6 @@ local function resolveIcon(icon)
 	return ICONS.misc
 end
 
--- ============================================================
---  MAKE SECTION
--- ============================================================
 local function makeSection(column, name)
 	local hasHeader = name ~= nil and name ~= ""
 	local headerH = hasHeader and (isMobile and 30 or 40) or 6
@@ -1388,9 +1369,6 @@ local function makeSection(column, name)
 	return inner
 end
 
--- ============================================================
---  PREVIEWLIBARY API
--- ============================================================
 local PreviewLibary = {}
 PreviewLibary.Flags = {}
 PreviewLibary.Release = Release
